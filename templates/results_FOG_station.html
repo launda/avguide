@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Fog Prediction</title>
+	<link rel="stylesheet" type=text/css href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+
+<!--results.html is passed 3 parameters
+1. content (text of review typed by user)
+2. prediction ('negative' or 'positive' classification by classifier)
+3. probability or confidence in classifiers prediction
+access these parameter values as {{par}}
+
+https://www.webforefront.com/django/usebuiltinjinjastatements.html
+-->
+
+
+<div>
+<h3>Result of Historical Search for Location:{{station}} airport for {{day}}:</h3>
+{% if fg_day_cnt >= 0 %}
+    <p>Out of <strong>{{num_matching_days}}</strong> days with similar matching synoptic pattern or environment <br/>
+        <strong>{{fg_day_cnt}}</strong> days had fog at {{station}} airport.</p>
+    <h3>Prediction:</h3>
+    <p>For given day and synoptic parameters, <strong> {{ prediction }}</strong> for this area.<br/>
+	 (probability of fog: <strong>{{ probability }}%</strong>).</p>
+	 
+{% elif fg_day_cnt == -1 %}
+    <p> <strong>NO</strong> days with matching synop pattern or environment <br/>
+    This is very unusual or historical event - Check input parameters again!!</p>
+    
+{% else %}
+    <p> <strong>How bizzare!!</strong></p>
+{% endif %}
+
+<p> Weather forecast from BOM for {{station}} for {{day}}: <br>
+    <strong>{{preci_fcst}}</strong>
+<!--    
+{% if station == "YBBN" %}
+   <a href="http://www.bom.gov.au/qld/forecasts/precis.shtml#QLD_PT001">(7-day Brisbane Forecast)</a>   
+{% endif %}
+-->
+<br>
+    <h3><a href="http://www.bom.gov.au/qld/forecasts/precis.shtml">7-day Preci Forecast for {{station}}</a></h3>
+    {{forecasts | safe}}
+    
+</div>
+
+<!--
+{% if fg_day_cnt >= 0 %}
+<h3>Result of Historical Search for Location:{{station}} airport for {{day}}:</h3>
+<div>Out of <strong>{{num_matching_days}}</strong> days with matching synop pattern or environment <br/>
+        <strong>{{fg_day_cnt}}</strong> days had storms at {{station}} airport</div>
+
+<h3>Prediction:</h3>
+<div>For given day and synoptic parameters, <strong>{{ prediction }}</strong> for this area.<br/>
+	 (probability of thunderstorms: <strong>{{ probability }}%</strong>).</div>
+<br>
+{% endif %}
+-->
+
+<!--
+<div> Analogues:<br/>{{analogues}}</div>
+https://stackoverflow.com/questions/37316791/proper-way-to-insert-html-into-flask
+
+<div> Stats for analogue days that had thunderstorms:<br/>{% include 'analogues.html' %}</div>
+
+Here we instead use jinja2 templating language to loop through the html table list tables.
+Using loop.index provides the index of the loop.
+This starts from 1 so we need to convert between python list indices and
+those for jinja2 loops. Then we can pull out the correct title for each table.
+
+For each table in the list, the table title is shown,
+and then the table itself.
+safe tells jinja2 to show this parameter as a html object.
+-->
+
+
+<div class=page>
+  <!--<h3>Stats for historical analogue days that had thunderstorms</h3>-->
+  {% for table in tables %}
+    <h2>{{titles[loop.index]}}</h2>
+    {{ table|safe }}
+    <br>
+  {% endfor %}
+</div>
+
+<!--Put Submit button to go back to main landing page index.html-->
+<div id='button'>
+	  <form action="/">
+	    <input type=submit value='Back'>
+	  </form>
+</div>
+
+  </body>
+</html>

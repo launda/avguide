@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+
+<h2>GPATS Climatology box plots</h2>
+
+<p> This analysis is based on historical/archive <a href="http://www.gpats.com.au/home">GPATS data</a>
+ over a 10 year periods. The data for each station is based on a 10NM by 10NM box
+ centred on station lat long.
+ This is to conform to the definition of what an observation is by including a
+ 'vicinity' area that goes out to 18km. (Ideally need a 10nm radius circle,
+ but the box should be a close approximation).
+ For the purpose of this study we need only one lightning strike inside the 'box'
+ to declare a given calendar date/day as a thunder day.
+ Note that a calendar day here is taken as from 00:00 to 23:59 UTC
+ (quite close to our field book reporting - 9am to 9am (23Z to 23Z) but then
+ we also have definition for calendar day for some climatology parameters and forecasts as
+ from midnight to midnight (14Z to 14Z). Addressing this would require some extra work!!!
+</p>
+
+ <p> With respect to how well gpats verifies with observations from manual or staffed stations,
+  an analysis for Brisbane shows general agreement between the two, although given that
+  gpats data has a fairly short (~ 10 year) history, the thunder day counts would be smaller.
+  Notice that different complimentary techniques were used to identify thunderstorms at a station.
+  For stations with human observers (manned stations) we not only have access to mandatory
+  present weather groups but also observer remarks/comments on storms/lightning in general
+  area but not at airport itself </p>
+
+<br>
+<p>
+  Below we have two plots for Brisbane Airport . On the left we have total thunder days (over 10 year period)
+  by months. To remove bias due to shorter length of GPATS records,
+  we can normalise data by diving monthly thunder counts by annual thunder day totals identified using each of the method.
+  This would give us percentage contribution to annual thunder day totals by each month.
+  - the plot for this on the right shows that storms days captured/indentified by GPATS is very similar to that
+  obtained by a human observer at staffed station. <br>
+  <img src="/static/images/faq/total_thunder_days_per_month_ybbn.png" float="left" width="40%" height="40%"  >
+
+  <img src="/static/images/faq/thunder_days_per_monthly_pcnt_ybbn.png" float="right" width="40%" height="40%"  >
+</p>
+
+
+<div>
+<p>This shows that regardless of method of TS signature detection at Brisbane airport,</p>
+<ul>
+<li>Dec is the most active TS month, accounting for about 16-18% of annual total, </li>
+<li>Jan, Oct and Nov about 12-16%, then </li>
+<li>Feb, Mar and Sep 8-10%</li>
+</ul>
+
+<p>Interesting small May peak against decreasing trend from Dec/Jan to July!!!
+Increasing frequency of cold upper troughs April into May while the low levels are still relatively warm
+and humid leads to higher lapse rates - thus bit more instability and thus more storm!!
+<a href="/static/images/faq/Lapse_Rates850T_minus_500T_10am_boxplot.png">see also</a>
+</p>
+<p>July is least active, JJA together is quietest 3 months, although Aug activity is simillar to April.</p>
+
+</div>
+
+ <p>
+ <h2> GPATS boxplots for monthly TS Distribution at various SE QLD locations.</h2>
+ Please refer to <a href="/static/docs/GpatsBasedStationThunderstormClimatology_Documentation.html">documentation</a> on how to interpret these.
+ </p>
+
+     <!-- if you wanted to include images inplace
+            <img src="/static/images/plots/gpats_climatology/{{sta}}.png">
+            to just insert a hyper link -- see below
+
+    http://www.websitecodetutorials.com/code/photo-galleries/css-popup-image.php
+     -->
+
+    {% for sta in stations %}
+        <div class="row">
+            <p><strong>
+                <a href="/static/images/plots/gpats_climatology/{{sta}}.png">{{sta}}</a>
+                {#
+                <a href="{{url_for('static/images/plots/gpats_climatology',filename={{sta}}.png}}">{{sta}}</a>      
+                #}
+            </strong></p>
+        </div>
+    {% endfor %}
+
+    {#
+     <!-- Big image poputs
+    <div id="thumbwrap">
+    {% for sta in stations %}
+    <a class="thumb" href="/static/images/plots/gpats_climatology/{{sta}}.png"{{sta}} alt=""><span><img src="/static/images/plots/gpats_climatology/{{sta}}.png"{{sta}} alt=""></span></a>
+    {% endfor %}
+    </div>
+    -->
+    #}
+
+    <hr>
+
+
+    <div class="row">
+            <form action="/gpats_heatmaps/" method="post" id="post-gpats-form">
+                <input type="submit" value="Get Heatmap">
+            </form>
+    </div>
+
+    <div>
+    <h3> GPATS heatmaps over TS Genesis area.</h3>
+    <p><em>(feature request from Sam)</em><br>
+    These hourly heatmaps on Google Earth™ backgrounds are intended to show evolution and movement of 
+    storms in both time and space on historical/past days that match current synoptic pattern (MSLP, upper steering winds and temps) <br>
+
+    Due insufficient storage for gpats data on server and few issues with generating lightning data heatmap
+    on the fly on pythonanywhere.com, these heatmapss at the moment are just static displays for one afternoon on Dec 2016,
+    when storms affected the Sunshine Coast.
+
+   <div>
+    {% for hr in hours %}
+        <div class="row">
+            <!--Cast integer hour to string hr|string   Cast string to integer:  hr|int-->
+            <a href="{{url_for('static', filename='gpats_heatmaps/'+hr|string+'UTC.html') }}">{{hr}} UTC heatmap</a>
+        </div>
+    {% endfor %}
+    </div>
+    <div>
+
+</div>
+{% endblock %}

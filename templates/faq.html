@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block title %}Thunderstorm Prediction: FAQ{% endblock %}
+
+{% block content %}
+<div class="faq">
+    <div class="align-center">
+        <h2>F&middot;A&middot;Q</h2>
+    </div>
+    <hr>
+    <dl class="faq-list">
+
+        <dt class="faq-question">How do I determine Synoptic Pattern similarity !</dt>
+        <dd class="faq-answer">
+
+            <p>This is just plain and simple back to the basics ingredient based
+            (moisture,instability and trigger) thunderstorm forecasting approach.
+            Uses upper air data and 10am/00Z AWS observations to do a nearest neighbors type
+            synoptic pattern similarity search to form TS predictions using historical observations.
+            We just find historical days with similar synoptic pattern
+            as the one we have on hand and find out how many of these past analogue days had storms. Kind of
+            like asking a forecaster with decades of experience in forecasting thunderstorms,
+            <i> Hey Mr Bernard,how likely are we to have storms today given these conditions.</i> </p>
+            
+
+            Here Synoptic pattern similarity is defined by
+            <ol>
+            <li> <strong>QNH</strong> - synoptic presure pattern (lower values usually associated with TS outcomes, 
+            likely indicate nearby trough/distrubance,
+            higher values probably imply low level ridging and stable inversion layers 
+            <p>
+            <center> <img border=1 src="/static/images/faq/QNH_variation_10am.png" 
+            alt="10am Surface Pressure variation by months of the year for storm and storm-free days"></center>
+            </p>
+            Note on the box and whisker plots above, the box extends from the lower to upper quartile values of the data (so middle 50% of the distribution),
+            with a line at the median. The whiskers extend from the box to show the range of the data. 
+            Where IQR is the interquartile range (Q3-Q1), the upper whisker will extend to last datum less than Q3 + 1.5*IQR).
+            Similarly, the lower whisker will extend to the first datum greater than Q1 - 1.5*IQR. 
+            Beyond the whiskers, data are considered outliers and are plotted as individual points. </p>
+
+            </li>
+            <li> <strong>gradient level winds</strong> is also a proxy for synoptic presure pattern
+            for instance moderate/fresh SE winds would indicate ridging,
+            N'ly or N'wly typically approaching surface trough, W/SW likely indicates post frontal conditions</li>
+            <li> <strong>upper 500 level winds</strong> - indicates proximity to upper trough/ridginess. I know box plots not ideal for wind dir!!
+            so have included windrose plots as well here for <a href="/static/images/500_winds_storm_days.png">storm days</a>
+             and  <a href="/static/images/500_winds_non-storm_days.png">non-storm</a> days.
+           <p>
+            <center> <img border=1 src="/static/images/faq/500hPa_WDIR_DLM_variation_10am.png" 
+            alt="500hPa Wind DIR variation by months of the year for storm and storm-free days - data from EC Reanal"></center>
+            </p>
+            </li>
+            <li> <strong>upper level temperature</strong> - proxy for upper cold pool/warm stable layer
+            <p>
+            <center> <img border=1 src="/static/images/faq/500hPa_Temp_variation_10am.png" 
+            alt="500hPa Temperature variation by months of the year for storm and storm-free days - data from EC Reanal"></center>
+            </p>
+            </li>
+            <li> <strong>surface Dewpoint Temps</strong> - good proxy for low level moisture. 
+            Good discrimination between TS and non-TS outcomes.</li>
+            <p>
+            <center> <img border=1 src="/static/images/faq/Td_variation_10am_boxplot.png"
+	         alt="10am Surface Dew point Temperature variation by months of the year for storm and storm-free days" > </center>
+            <p>
+            
+            <li> <strong>850-500 lapse rate</strong> - good discrimination between TS and non-TS 
+            outcomes with values higher than 25 mostly associated with storm days
+            <p>
+            <center> <img border=1 src="/static/images/faq/Lapse_Rates850T_minus_500T_10am_boxplot.png"
+	         alt="Lapse Rates variation by months of the year for storm and storm-free days" > </center>
+	         
+	         <p> Seasonal variation of lapse rate appears to have a larger spread in values during spring 
+	         and a higher median value as well. This is likely due onset of heating in the 
+	         lower levels during SON (September to October) while the upper air pattern has yet to respond
+	         i.e in the uppers we still have westerly trough systems and upper cold pools passing through.
+	         I imagine this is producing more steeper lapse rates during spring. </p>
+	         
+	         
+            <p>
+            <center> <img border=1 src="/static/images/faq/Lapse_Rates850_500_Seasons_boxplot.png"
+	         alt="Lapse Rates variation by seasons of the year" > </center>
+            <p>
+            </li>       
+
+        </dd>
+        <hr>
+        
+        <dt class="faq-question">About the Statistics for matching historical days that had storms</dt>
+        <dd class="faq-answer">
+        <p>I have used GPATS data resampled to 1min and merged with station aws observations , so basically a
+        TS flag column that counts gpats strike with 10NM box around station "near" the aws observation time.
+        I have also used present weather groups from manual/staffed stations.(process explained in the 
+        documentation pptx file  – hidden under the clickable funny TS icon in the footer).
+        Time window is UTC day so 00Z to 24Z  which kind of aligns with 9am to 9am reporting of various weather
+        parameters. The storm start/onset time is the time of 1st gpats strike or 1st TS speci
+	    from the AWS records. Storm cessation time is the last GPATS or TS speci. 
+	    Multiple TS events during the day get grouped into 1 event, which will provide
+	    misleading onset/decay and/or duration for thiese days. Also I have only looked
+	    at lowest visibility, and highest wind gust generated during TS event to capture
+	    worst case scenario. These stats can form the basis for generating TAF requirements
+	    e.g TEMPO start_time/end_time TSRA max_gust lowest_vis</p>
+        </dd>
+        <hr>
+        
+        <dt class="faq-question">What's going on behind the scenes?</dt>
+        <dd class="faq-answer">
+        <p hidden>
+        Once you select an airport location, the search query is first converted to a
+	    geographic location by the
+            <a href="https://developers.google.com/maps/documentation/geocoding/">
+                Google Maps Geocoding API
+            </a>.
+            Then we check with
+            <a href="http://www.wunderground.com/">Weather Underground</a>
+            or BOM AVLOC database to find the nearest airport. We use
+            <a href="https://docs.python.org/3.4/library/re.html">regular expression</a>
+            to parse out an airport code. </p>
+
+        <p>For each airport we request current conditions (if available) or
+            alternatively read last 24 hours observation from ADAMS database. The 10am (00Z) or 12 noon (02Z) aws data
+            is parsed to extract the synoptic indicator predictive parameters (sfc TD, QNH etc).
+            The QNH/MSLP and Td come from actual station 00Z obs. I have used 10am rather than 3pm mainly because 
+            I saw better discrimination between storm and non-storm events on 10am values – 
+            also I wanted predictors from pre-storm environment – but will try using 3pm obs later.
+            
+            The upper air parameters 500 temps and winds and lapse rate is from the closest sounding location,
+            the 23UTC sounding. Stations furthest away from sounding may have slightly different upper
+            profile so expect less reliable predictions the further one goes from sounding location. If upper air data for
+            current day is not available they have to be manually entered - 
+            in future expect to grab these from forecast AccessR NWP)  </p>
+
+        </dd>
+        <dd class="faq-answer">
+            Finally, we search through weather history data for similar calendar days (default 6 weeks/42 days either side
+            of day for which forecast is sought) and grab all days when the synop conditions were "similar".
+            The weather history and statistics for past thunderstorm days comes from a merge of airport aws and
+            gpats data. (via <a href="http://tcz.bom.gov.au:8888/tcz/anon/Pf4/">Climate Zone</a>).
+
+            Then we find how many of theses days had thunderstorms which gives us a simple fraction of matching days
+            which had storms. This is the chance of storms.
+            
+            
+            <br><br>
+            Its quite easy to push the data through machine learning algorithms – I have done a
+             <a href="http://scikit-learn.org/stable/modules/mixture.html">Gaussian Mixture Model</a>
+<a href="https://brilliant.org/wiki/gaussian-mixture-model/">(see also)</a> which is just a generalisation
+of the Nearest Neighbour model. Although it has better performance metrics (at least 90% accuracy).
+I suspect the higher accuracy may be because 90% of the samples are non-TS days (only about 10% TS days) so if we
+forecast no TS for every day/sample we will get 90% accuracy but pretty useless practically. This problem is mainly due
+the class imbalance – <a href="/static/images/storm_vs_nonstorm_days_per_month.png">see</a>. 
+This can be addressed with under sampling non-TS days before running through the machine learning algorithm, but then this is kinda fudging reality.
+I have sticked with these nearest neighbours variants as it makes lot sense meteorologically,
+results are highly interpretable and the technique is not quite a black box as with say ANN and random forest.
+ 
+I might try using some of the derived TS parameters such as CAPE, LI, LCL etc and see if it makes much difference,
+and maybe use 3pm data rather than 10am values for synop matching. 
+
+        </dd>
+	    <hr>
+        <dt class="faq-question">About the percentage chance of storms!</dt>
+        <dd class="faq-answer">
+           The chance is just the fraction or proportion of days with "similar" synoptic environment
+            that had thunderstorms. This is very similar to the percentage chance of fog produced by Livio Regano's
+            fog guidance system. In the past forecasters have done arbitrary/subjective manipulation of this percentage
+            to try fudge a value above or below 30% to justiy a PROB30 TS or no TS decision respectively. To allow more
+            objective interpretation of this predicted storm probability,
+            a retrospective analysis of storm prediction using my algorithm was run over last 17
+            years. This gave over 6500 TS predictions (one for each day), and the histogram of thunderstorm
+            probability values was generated, one set for days when storms were actually observed and another histogram of TS
+            predictions for days when no TS was observed. We have not normalised the frequency plots below to highlight
+            the huge class imbalance between number of storm days and storm free days.
+        
+
+
+           <p>
+            <center> <img border=1 src="/static/images/faq/boxplot_fraction_TS_days_in_matching_synop_days.png"
+	         alt="Boxplot fraction of days we have storms in matching days" ></center><p>
+    
+
+	       <p>
+            <center> <img border=1 src="/static/images/faq/Hist_fraction_TS_days_in_matching_synop_days_both_class_with_stats.png"
+	         alt="Histogram for fraction of days we have storms in matching days" ></center><p>
+	         
+	      <br>
+	       <p> What the plots clearely show is that the probabilities are usually higher for days when we actually have
+            storms (almost a normal distribution with mean/median chance TS near 20%); for days when we didn't had storms
+	         the mean/median is about 4% and the distribution looks heavily skewed (almost a perfect one tail
+            distribution)
+
+	        Further analysis by normalising the histogram frequencies and fitting a smoothing spline gaussian density
+            curves for the two distributions show the PDFs intersect near 0.12. When making a decision between TS and
+            no TS, we just drop a vertical for given probability value and forecast which class has higher density for
+            that probability value. Thus we can see that for probability values greater than about 12%, the density function
+            has higher values for TS curve than for non-TS curve. </p>
+            <br>
+	    <p>
+            <center> <img border=1 src="/static/images/faq/PDF_fraction_TS_days_in_matching_synop_days.png"></center><p>
+	    <p>
+            <center> <img border=1 src="/static/images/faq/gaussian_PDF_proportions_TS_to_noMatchingSynopDays.png"></center><p>
+
+	    <br> From model evaluation metric plots, highest possible accuracy with higher recall rates would have to be
+            where the two curves intersect - cut-off boundary near 12%. <br>
+	    <p>
+            <center> <img border=1 src="/static/images/faq/Precision_Recall_Metrics_SynopticPatternClassifier.png"></center><p>
+
+	    <br> Sampling the decision threshold space between 5% and 50% also suggests greatest AUC for ROC curves for
+            thresholds near 12%.
+	    <p>
+            <center> <img border=1 src="/static/images/faq/ROC_various_Prob_thresholds.png"></center><p>
+
+	    <br> Generally speaking, curves in the top left (lines in red and green for probability values
+	         12% and 10% respectively yield better classifiers. Choice of lowest value 5% would yeild
+             much better recall rates (higher fraction of real/actual storm days that we correctly predict i.e higher
+            true positive TP rate) but also lead to increase in false alarms. Conversely, although a higher cutoff
+            threshold of say 25% or even 50% yields much higher accuracy, it will be at expense of lower recall rate(i.e. lead to increase in
+            number of missed events). 12% appears to be a sweet spot in our recall/accuracy tradeoff. The prediction,
+            "thunderstorms" versus "no thunderstorms" is based on this hard-coded threshold value. Note that more work
+            is needed to identify stronger forecast parameters since at the moment we still have many (about 50-100) TS events
+            that get misclassified as non-TS with cut-off near 0.12, also many more non_TS events would be classified
+            as TS as inspection original histograms reveal 300-500 events that yielded probabilities greater than 0.12.
+            This is also partly effect of huge class imbalance between TS and non_TS events.
+
+        </dd>
+        <hr>
+        <dd class="faq-answer">
+            If no matching synoptic days are found, the chance of storms can't
+	    be calculated (equates to division by zero error). We catch the exception
+	    and say storm guidance can't be provided. This should be very rare events, usually
+	    input parameters in outlier space.
+	   </dd>
+        <hr>
+        <dt class="faq-question">How to contribute/feedback?</dt>
+        <dd class="faq-answer">
+            Thunderstorm prediction based on synoptic pattern matching is an
+             ongoing project to improve practical TS forecasting by
+            <a href="boulaunda.com">Vinord Anand.</a>
+
+            Most of the current efforts in TS prediction is on improving NWP model physics,
+            resolution or assimilation which does not always translate well to practice!!
+            Feel free to <a href="mailto:vinord@gmail.com">get in touch </a> if you want to improve your TAF verification scores!.
+        </dd>
+        <hr>
+        <dt class="faq-question">Where is this app running?</dt>
+        <dd class="faq-answer">
+            Currently this app runs on
+            <!-- a href="http://qld-vw-dev.bom.gov.au/">qld-vw-dev</a>. -->
+            <a href="http://www.pythonanywhere.com/">pythonanywhere</a>
+            It's a Python 3 application built primarily using
+            <a href="http://flask.pocoo.org/">Flask</a>,
+            <a href="http://jinja.pocoo.org/">Jinja</a>, and
+            <a href="http://docs.python-requests.org/en/latest/">Requests</a>.
+            (Plus the wonderful
+            <a href="https://docs.python.org/3/library/index.html">Python Standard Library</a>.)
+            The small bit of client code (copyright ???) uses
+            <a href="http://jquery.com/">jQuery</a> and
+            <a href="http://handlebarsjs.com/">Handlebars</a>.
+            And HTML and CSS with
+            <a href="http://html5boilerplate.com/">HTML5 Boilerplate</a>.
+        </dd>
+    </dl>
+</div>
+{% endblock %}

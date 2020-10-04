@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+    <h3>Observations from {{sta}} (at ~{{hr}} UTC) last 72 hours</h3>
+    {{data_frame | safe}}
+    <p>NB: Data points are at same UTC time every 24hours to easily spot daily trends.</p>
+
+    <br>
+    <h3>Latest TAF {{sta}} and METARS (last 2)</h3>
+    {{taf|safe}}
+    <!--<p> http://reg.bom.gov.au/cgi-bin/reg/dmsu/get_tafmets?tafs={{sta}}</p>-->
+    <p> NAIPS Location Brief for <a href="https://www.airservicesaustralia.com/naips/Briefing/Location">{{sta}}</a> 
+    (Need a valid login to access NAIPS Pilot Briefing Service  - 
+    contact Airservices Service Desk on 1800 801 960).</p>
+    
+    <p> All         <a href="{{ url_for('get_tafs',area='area40')}}">Area 40</a> Tafs </p>
+    
+    <p> All Tafs in <a href="{{ url_for('get_tafs',area='qld'   )}}">QLD</a> </p>
+    <!--BOMAVIATION:1BOM2018-->
+</div>
+<hr>
+
+<div>
+    <h3>Preci Forecast for location closest to {{sta}}</h3>
+    {{forecasts | safe}}
+</div>
+<hr>
+
+
+<p>Calling plotting function {{url_for('plot_obs_time_series', sta = sta)}}. <br>
+    On pythonanywhere.com we have to refresh page after it has loaded to actually view the plots!<br>
+</p>
+
+<div>
+    <h3>Observation Time Series for last 72 hours</h3>
+     <img src="{{url_for('plot_obs_time_series', sta = sta)}}" alt="T/Td Time series">
+     <!-- above line actually makes function call to get matplotlib to do time series n display
+     code blw just for pythonanywhere.com to force display it - comment otherwise -->
+     <!-- <img src="/static/images/plots/TimeSeries_{{sta}}.png">-->
+</div>
+
+<hr>
+
+<div style="float: center;">
+    <!-- we only have climate zone data for SE QLD locations
+    so if sta we have is not in SE QLD don't attempt to to this plot   -->
+    {% if sta in ['YBBN', 'YBAF', 'YAMB', 'YBSU', 'YBCG', 'YBOK', 'YTWB'] %}
+        <h3>Td Variation by Month for {{sta}}</h3>
+        <p> Note this plots are meant to eyeball Td distribution against TS outcomes, and thus
+        useful as a diagnostic tool between about 00Z (10AM LT) and 06Z (4PM LT). 
+        Median TS onset time is about 05Z (3PM LT) for most locations, so not much use after about this time. 
+        <br>
+        Plan is to have similar plots for other diagnostic parameters relevant to TS forecasting 
+        filtered by current month or season only.</p> 
+        
+        <p>Calling plotting function {{url_for('plot_td', sta = sta)}}. Please be patient!!! <br>
+        Note: On pythonanywhere.com will need to refresh page to ensure latest plot!!</p>
+        <img src="{{url_for('plot_td', sta = sta)}}" alt="TD Variation with Months">
+        <!--<img src="/static/images/plots/Td_variation_10am_swarmplot_{{sta}}.png">-->
+    {% else %}
+        <p>Don't have access to {{sta}} archive AWS data. Trial only for SE QLD.</p>
+    {% endif %}
+</div>
+
+<hr>
+
+<div>
+    <!-- we only have climate zone data for SE QLD locations
+    so if sta we have is now in SE QLD don't attempt to to this plot   -->
+
+    {% if sta in ['YBBN', 'YBAF', 'YAMB', 'YBSU', 'YBCG', 'YBOK', 'YTWB'] %}
+        <h3>Statistical Distribution of parameters ~{{hr}} UTC (Current Month only)</h3>
+        <p> This table will help put the current observations from station in historical
+        context; for instance if say the current station dewpoint is
+        in the top or bottom quartile (25% of the distribution), this would indicate rather humid or drier than normal conditions respectively.</p>
+        {{stat | safe}}
+    {% else %}
+        <p>Don't have access to {{sta}} archive AWS data. Trial only for SE QLD.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

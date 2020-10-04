@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+
+<h3>Web Cam Selection</h3>
+
+{% for category, message in get_flashed_messages(with_categories=true) %}
+    <p class="{{ category }}">{{ message }}</p>
+{% endfor %}
+
+
+<form action="" method="post">
+
+    {{ form.csrf_token() }}
+
+    {% for field in form if field.name != "csrf_token" %}
+        <p>{{ field.label() }}</p>
+        <p>{{ field }}
+            {% for error in field.errors %}
+                {{ error }}
+            {% endfor %}
+        </p>
+    {% endfor %}
+
+</form>
+
+</div>
+{% endblock %}

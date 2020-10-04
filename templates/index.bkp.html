@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="search-form">
+    <form action="/results_seqld" method="post" id="location-form">
+        <div>
+            <textarea class="form-control" name="location"
+            id="location-input" placeholder="Enter TAF location e.g 'YBBN' "></textarea>
+            <textarea class="form-control" name="date"
+            id="date-input"    placeholder="Enter Date for which forecast sought e.g '2018-04-24' "></textarea>
+            <input type="submit" class="btn btn-success" value="Load data"
+            minlength=1 required  autofocus>
+        </div>
+
+        <div>
+            <span class="space-left">Current Observations for {{station}} for {{day}}</span><br>
+            <!--
+            <div class="row">
+                {% for id in obs.keys() %}
+                {{id}}
+                {% endfor %}
+            </div>
+            <div class="row">
+                {% for id in obs.values %}
+                {{id}}
+                {% else %}
+                <em>Couldn't read observations!</em>
+                {% endfor %}
+            </div> </ul> We just use unordered list for now
+            Hopefully we can render this as a table in future!!-->
+
+            <ul>
+            {% for id in obs.keys() %}
+            {{id}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {% endfor %} <br>
+            {% for id in obs.values %}
+            {{id}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {% else %}
+            <li><em>Couldn't read observations!</em></li>
+            {% endfor %}
+
+        </div>
+
+        <div class="search_period"><br>
+            <span class="space-right">Define search window for analogues:</span>
+            <ul>
+            <li><input id="period1" type="radio" value="" name="period" checked>
+            <label for="period1" class="space-right">
+                <span><span></span></span>3 months centered current month.
+            </label></li>
+            <li><input id="period2" type="radio" value="" name="period">
+            <label for="period2" class="space-right">
+                <span><span></span></span>5 months centered current month.
+            </label></li>
+            <li><input id="period3" type="radio" value="" name="period">
+            <label for="period3" class="space-right">
+                <span><span></span></span>Current calendar month Only
+            </label></li>
+            </ul>
+        </div>
+
+        <div>
+            <button class="btn beta" type="submit" name="location-submit">
+                Load Parameters for given Date and Station
+            </button>
+        </div>
+
+        <hr>
+        <div class="search_parameters">
+            <span class="space-left">Search Parameters:<br><b>Low level conditions</b></span><br>Temp
+            <input id="par_temp" type="text" value=20 size="1" name="srch_params">
+            <label for="srch_params1" class="space-right">C
+            </label> Td
+            <input id="par_td" type="text" value=15 size="1" name="srch_params">
+            <label for="srch_params2" class="space-right">C
+            </label> QNH
+            <input id="par_mslp" type="text" value=1015 size="1" name="srch_params">
+            <label for="srch_params3" class="space-right">hPa <br>
+            </label> Gradient level Winds
+            <input id="par_sfc_wind" type="text" value=120/15 size="3" name="srch_params">
+            <label for="srch_params4" class="space-right">kts<br>
+            </label>
+            <span class="space-left"><b>Upper level wind/temps</b></span><br>500 Temp
+            <input id="par_500temp" type="text" value=-15 size="1" name="srch_params">
+            <label for="srch_params5" class="space-right">C
+            </label> DLM (500) winds
+            <input id="par_500_wind" type="text" value=250/40 size="3" name="srch_params">
+            <label for="srch_params6" class="space-right">kts
+            </label>
+            <span class="space-left"><br><b>Instability Parameters</b></span><br>850-500 Lapse rate
+            <input id="par_500temp" type="text" value=-15 size="1" name="srch_params">
+            <label for="srch_params5" class="space-right">
+            </label> 850-700 Lapse rate
+            <input id="par_500_wind" type="text" value=-15 size="3" name="srch_params">
+            <label for="srch_params6" class="space-right">
+            </label> TOTA
+            <input id="par_500_wind" type="text" value=44 size="3" name="srch_params">
+            <label for="srch_params6" class="space-right">
+            </label>
+        </div>
+
+        <div>
+            <button class="btn beta" type="submit" name="parameter-submit">
+                Get t-storm prediction for {{station}} for {{day}}
+            </button>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

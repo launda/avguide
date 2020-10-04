@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div>
+
+     <form action="/sonde_update/" method="post" id="location-form">
+        <div>
+            <p>
+            Enter upper air winds and temperature data  from <a href="http://www.bom.gov.au/aviation/observations/aerological-diagrams/">radiosonde location</a> in the area.
+            <br> Sonde data is used to estimate environment lapse rate (difference between 850hPa
+            and 500hPa temperature) and approximate upper steering wind vectors.
+            </p>
+            <p> Observations will be retrieved from <a href="http://www.bom.gov.au/qld/observations/brisbane.shtml">aviation locations</a> in close proximity to sonde station.<br>
+                Assumption is that upper air data will be 'similar' over a broader area.</p>
+            <p> Thunderstorm predictions for each location is available from the last column.</p>
+            <input type="submit" class="btn btn-success" name="load_sonde" value="Update Sonde"
+            minlength=1 required  autofocus>
+
+        </div>
+     </form>
+
+     <hr>
+     <!--
+
+     <form action="/" method="post" id="get_obs_form">
+        <div>
+            <p> Observations will be retrieved for aviation locations in close proximity to sonde station.<br>
+                Assumption is that upper air data will be similar for over a broad area.</p>
+            <input type="submit" class="btn btn-success" name="get_obs" value="Get AWS Observations"
+            minlength=1 required  autofocus>
+        </div>
+     </form>
+     <hr>
+     -->
+
+     {#
+     <div>
+            {% if show_obs %}
+            <h3>Latest Observations over {{area}} for {{day}}:</h3>
+            <p>{% include 'observations.html' %}</p>
+            <p>NB: Generally stations report data on the half hour. Data may arrive late into system,
+            as a result some stations may not show up or be duplicated. Refresh page to fix! </p>
+            {% endif %}
+
+     #}   
+     </div>
+
+     <h2 class="title alpha">
+        <center><a href="/thunderstorm_predictions/">Thunderstorm Occurrence Probabilities</a></center>
+    </h2>
+     <form action="/thunderstorm_predictions/" method="post" id="get_preds_form">
+        <div>
+            <!--
+            NOTE
+            Have overloaded/piggy backed the route or url /thunderstorm_predictions to do fog as well!!
+            So first up check if user clicked fog prediction button and handle that first
+            by redirecting for route that handles fog calculation
+            -->
+
+            <p> Thunderstorm predictions are only for aviation locations that are in close proximity to upper air station.<br>
+            Running this before 10am may get you 10am obs from yesterday<br>
+            and results may not be meaningful as we use latest upper air sounding data for pattern matching.</p>
+
+            <input type="submit" class="btn btn-success" name="get_storm_preds" value="TS Predictions SE QLD"
+            minlength=1 required  autofocus>
+            <input type="submit" class="btn btn-success" name="get_fog_preds" value="FG Predictions SE QLD"
+            minlength=1 required  autofocus>
+        </div>
+     </form>
+
+     <div>
+        {% if show_storm_preds %}
+        <h3>Thunderstorm Occurrence Probabilities for {{area}} <br> for {{day}}:</h3>
+        <p> The prediction (True or False) is based on verification of this synoptic pattern matching system<br>
+        over a period of 18 years using Brisbane AWS observations and upper air data - <a href="/faq">see FAQ</a><br>
+        Days with storm probabilities greater than about 12 to 15% are likely to be associated with actual storm activity<br>
+        with at least 80% accuracy (and hit rates (POD) about 80%). <br>
+        Days with storm probabilities lower than about 8 to 10% are not likely to see storm activity.
+        </p>
+        <p>{% include 'storm_predictions.html' %}</p>
+        {% endif %}
+
+        {% if show_fog_preds %}
+        <h3>Fog Occurrence Probabilities for {{area}} <br> for {{day}}:</h3>
+        <p> The prediction (True or False) is based on fog probabilities threshold of 15%.<br>
+            Values more than 15% are likely to be associated with fog events
+        </p>
+        <p>{% include 'fog_predictions.html' %}</p>
+        {% endif %}
+
+     </div>
+
+     <hr>
+
+     <div class="container">
+        <h3>Feedback welcome...</h3>
+        {% for comment in comments %}
+            <div class="row">
+                {{ comment.content }}
+            </div>
+        {% endfor %}
+
+        <div class="row">
+            <form action="/post_update/" method="post" id="post-feedback-form">
+                <textarea name="contents" placeholder="Enter a comment"></textarea>
+                <input type="submit" value="Post comment">
+            </form>
+        </div>
+     </div>
+
+</div>
+{% endblock %}

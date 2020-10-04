@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+    <h3>Latest TAF {{sta}} and METARS (last 2) for airports in {{area}}.</h3>
+    {{taf|safe}}
+    <!--<p> http://reg.bom.gov.au/cgi-bin/reg/dmsu/get_tafmets?tafs={{sta}}</p>-->
+    <p> <a href="https://www.airservicesaustralia.com/naips/Briefing/Location">NAIPS Brief</a></p>
+    <!-- BOMAVIATION:1BOM2018 -->
+</div>
+{% endblock %}

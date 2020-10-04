@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+    <p> Lightning activity (proxy for storm location and movement) during afternoon on {{st_date}} </p> <hr>
+    {% for hr in hours %}
+        <div class="row">
+            <!--Cast integer hour to string hr|string   Cast string to integer:  hr|int-->
+            <a href="{{url_for('static', filename='gpats_heatmaps/'+hr|string+'UTC.html') }}">{{hr}} UTC heatmap</a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

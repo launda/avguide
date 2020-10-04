@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% block content %}
+
+<head>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+</head>
+
+<body>
+    <!--<h2>{{ airport.Location }} airport ({{airport.LOC_ID}})| State {{airport.State}} |
+    Area {{ airport.AREA }}
+    link for webcame </h2>-->
+    <div class="row">
+        <form action="/web_cams/" method="post" id="{{airport.Location}}">
+            <input type="submit" value="WebCAM" name="camera.{{airport.Location}}">
+        </form>
+    </div>
+
+
+    <div>
+        <table summary="" class="stationdetails">
+            <tr><td> <strong>Station Details</strong> &nbsp;</td>
+                <td> <b> Name:</b> {{ airport.Location }} &nbsp;</td>
+                <td> <b> ID:</b> {{ airport.LOC_ID}}&nbsp; </td>
+                <td> <b> Lat:</b> {{ airport.Lat }}&nbsp;</td>
+                <td> <b> Lon:</b> {{ airport.Long }} &nbsp;</td>
+                <td> <b> State:</b> {{ airport.State}} &nbsp;</td>
+                <td> <b> Arfor:</b> {{ airport.AREA}} &nbsp;</td> </tr>
+            <tr><td> <b> HAM ceiling:</b>{{ airport.HAM_cld_ft}}ft &nbsp;</td>
+                <td> <b> HAM vis:</b> {{ airport.HAM_vis_m }}m &nbsp;</td>
+                <td> <b> SAM ceiling:</b> {{ airport.SAM_cld_ft}} ft  &nbsp;</td>
+                <td> <b> SAM vis:</b> {{ airport.SAM_vis_m}} m &nbsp;</td>
+                <td> <b> MSA:</b>{{ airport.MSA}} ft  &nbsp;</td>
+                <td> <b> Elevation:</b>{{airport.elevation}}ft  </td>
+            </tr></table>
+
+        <!--http://127.0.0.1:5000/static/images/plots/gpats_climatology/YBBN.png-->
+
+        <h3> Aviation Hazard Climatology and Predictions</h3>
+        {% if airport.LOC_ID in ['YBBN', 'YBAF', 'YAMB', 'YBSU', 'YBCG', 'YBOK', 'YTWB'] %}
+            {#
+             <strong>
+             <a href="{{url_for('results', station=airport.LOC_ID)}}">Storm Prediction</a> |
+             <a href="{{url_for('aero_intel', taf_id=airport.LOC_ID)}}">Fog Prediction</a>
+             </strong>
+             #}
+             <table summary="" class="predictions">
+            <tr><td> <strong>Thunderstorms</strong></td>
+                <td> <b> <a href="{{ url_for('static', filename='/'.join(['images','plots', 'gpats_climatology',airport.LOC_ID+'.png'])) }}" >&nbsp;Clim | &nbsp;</a></td>
+                <!--
+                <td> <b> <a href="http://127.0.0.1:5000/static/images/plots/gpats_climatology/{{airport.LOC_ID}}.png")>&nbsp;Clim | &nbsp;</a></td> -->
+
+                <td>
+                    {% if (time_now|float >= 12) %}
+                    {#% if ((time_now|float >= 14) and (time_now|float <= 23.59)) %#}
+                    {#% if (time_now|float >= 0) %#}
+                        {#
+                        <form action="{{ url_for('results', station=airport.LOC_ID) }}" method="post">
+                        Station Pressuer:<input <input type="text" name="press" value="1018"><br>
+                        Dew Point Temp:<input <input type="text" name="dewpt" value="18"><br>
+                        <input type="submit" value="Predict">
+                        </form>
+                        <p>"U get this form to get MSLP and Td if 00Z obs not yet in".</p>
+                        WE INCLUDE html template  qnh_td.html to solicit QNH and Td if 00Z obs not yet available
+                        #}
+
+                        {% include "qnh_td.html" %}
+                    {% else %}
+                        <b> <a href="{{url_for('results', station=airport.LOC_ID)}}">  Predict</a> </td>
+                    {% endif %}
+                <td> <strong>&nbsp;Fog</strong> &nbsp;</td>
+                <td> <b> <a href="{{url_for('static',filename='/'.join(['images','plots', 'fog_plots_Dec2015',airport.LOC_ID+'1.pdf'])) }}">&nbsp;Clim | &nbsp;</a></td>
+                {#<td> <b> <a href="/static/images/plots/fog_plots_Dec2015/{{airport.LOC_ID}}1.pdf">&nbsp;Clim | &nbsp;</a></td>#}
+                <td> <b> <a href="{{url_for('results', station=airport.LOC_ID)}}">  Predict</a> </td>
+                <td> <b> <a href="http://www.bom.gov.au/aviation/climate/"> &nbsp; | &nbsp;Aerodrome Climatological summaries</a> </td>
+            </tr></table>
+
+        {% else %}
+            <!--Sorry no storm prediction - trial for SE QLD airports only for now!!-->
+            <table summary="" class="predictions"><tr>
+            <td> <b> <a href="http://www.bom.gov.au/aviation/climate/"> &nbsp;Aerodrome Climatological summaries</a> </td>
+            </tr></table>
+        {% endif %}
+
+        <div id="mapid" style="width:90%; height:500px;"></div>
+
+        {% if airport.LOC_ID in ['YBCS'] %}
+            <img src="/static/images/cairns_panorama.png" style="width: 80%; height: 100%">
+        {% else %}
+
+        {% endif %}
+
+        <!-- Google street view - facing north angle 10 deg 
+        <img src="https://maps.googleapis.com/maps/api/streetview?size=700x300&heading=360&pitch=10&location={{airport.Location}},{{airport.state}}"
+        alt="street view of {{airport.Location}}">
+        -->
+
+        {# can also use lat long {{airport.Lat}},{{airport.Long}}
+            see https://developers.google.com/maps/documentation/streetview/intro
+        #}
+
+        <script type="text/javascript">
+            var mymap = L.map('mapid').setView([{{ airport.Lat }}, {{ airport.Long }}], 16);
+            var osmLayer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 12,
+                attribution: 'Data, imagery and map information provided by <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> and contributors.'
+            });
+            mymap.addLayer(osmLayer);
+
+            /* don't change icons - I like big blue !!!
+            var blackIcon = L.Icon.extend({
+                options: {
+                    iconUrl: "{{ url_for('static', filename='marker-24.png') }}",
+                    iconSize: [24, 24]
+                }
+            });
+            */
+
+            //add other things to your map,markers, polylines, polygons, circles, and popups ext.Here we add a marker
+            var marker = L.marker([{{ airport.Lat }}, {{ airport.Long }}]).addTo(mymap);
+            // if u have any better icon - us eit like this
+            //var marker = L.marker([{{ airport.Lat }}, {{ airport.Long }}], {icon: new blackIcon()}).addTo(mymap);
+            marker.bindPopup("{{airport.Location}} airport").openPopup();
+
+            //Adding a circle for 30NM is the same (except for specifying the radius in meters as a second argument)55560
+            // 5NM = 9260 , 10NM = 18520, 30NM = 55550
+            var circle = L.circle([{{ airport.Lat }}, {{ airport.Long }}], {
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.1,
+                radius: 9260
+            }).addTo(mymap);
+
+            circle.bindPopup("{{airport.Location}} 5NM range ring.");
+
+
+            // Dealing with events
+            // Every time something happens in Leaflet, e.g. user clicks on a marker or map zoom changes,
+            // the corresponding object sends an event which you can subscribe to with a function.
+            // It allows you to react to user interaction
+            var coord_popup = L.popup();
+            function onMapClick(e) {
+                //alert("Cordinates " + e.latlng);  // alert() too old fashined - use pop ups
+                coord_popup
+                    .setLatLng(e.latlng)
+                    .setContent(e.latlng.toString())
+                    .openOn(mymap);
+            }
+            mymap.on('click', onMapClick);
+
+        </script>
+
+
+    </div>
+
+<div>
+    <h3>24HR Trends in observed variables - last 3 day</h3>
+    {{data_frame | safe}}
+    <br>
+    <h3>Latest TAF {{airport.LOC_ID}} and METARS (last 2)</h3>
+    {{taf|safe}}
+    <!--<p> http://reg.bom.gov.au/cgi-bin/reg/dmsu/get_tafmets?tafs={{airport.LOC_ID}}</p>-->
+    <ul>
+    <li> NAIPS Location Brief for <a href="https://www.airservicesaustralia.com/naips/Briefing/Location">{{airport.LOC_ID}}.</a>
+    NAIPS Pilot Briefing Service -Airservices Service Desk 1800 801 960.</li>
+    <li> {{airport.LOC_ID}} <a href="https://pilotweb.nas.faa.gov/PilotWeb/notamRetrievalByICAOAction.do?method=displayByICAOs&formatType=ICAO&retrieveLocId={{airport.LOC_ID}}&reportType=RAW&actionType=notamRetrievalByICAOs">Notams</a>
+    <!--http://ourairports.com/airports/YSSY/pilot-info.html#notam-->
+    <li> Area Tafs <a href="{{ url_for('tafors',area='40')}}">Area 40</a>|
+         <a href="{{ url_for('tafors',area='41')}}">Area 41</a>|
+         <a href="{{ url_for('tafors',area='43')}}">Area 43</a>|
+         <a href="{{ url_for('tafors',area='44')}}">Area 44</a>|
+         <a href="{{ url_for('tafors',area='45')}}">Area 45</a>
+    </li>
+    <li> Tafs in <a href="{{ url_for('tafors',state='qld')}}">QLD</a>|
+                 <a href="{{ url_for('tafors',state='nt')}}">NT</a>|
+                 <a href="{{ url_for('tafors',state='nsw')}}">NSW</a>|
+                 <a href="{{ url_for('tafors',state='vic')}}">VIC</a>|
+                 <a href="{{ url_for('tafors',state='sa')}}">SA</a>|
+                 <a href="{{ url_for('tafors',state='wa')}}">WA</a>|
+    </li>
+    </ul>
+    <!--BOMAVIATION:1BOM2018-->
+</div>
+
+<hr>
+
+<div>
+    {% if airport.LOC_ID in ['YBSG', 'YBWW', 'YSMH', 'YWIS'] %}
+        {% set taf_map = {'YBSG':'YBWP', 'YBWW':'YTWB', 'YSMH':'YBRK','YWIS':'YBRK'} %}
+        <h3>Preci Forecast for location closest to {{airport.LOC_ID}} ({{taf_map[airport.LOC_ID]}})</h3>
+    {% else %}
+        <h3>Preci Forecast for location {{airport.LOC_ID}}</h3>
+    {% endif %}
+    {{forecasts | safe}}
+</div>
+
+<hr>
+
+<div>
+    {#
+       <h3>Forecast Max/Min temperatures (next 7 days)</h3>
+       <img src="/static/images/plots/max_minT_{{airport.LOC_ID}}.png">
+    #}
+    <img src="{{ url_for('static', filename='/'.join(['images', 'plots', 'max_minT_'+airport.LOC_ID+'.png'])) }}"/>
+</div>
+
+
+<hr>
+
+<!--
+<p>Calling plotting function {{url_for('plot_obs_time_series', sta = airport.LOC_ID)}}. <br>
+    On pythonanywhere.com we have to refresh page after it has loaded to actually view the plots!<br>
+</p> -->
+
+<div>
+    <h3>Observation Time Series for last 72 hours</h3>
+     <img src="{{url_for('plot_obs_time_series', sta = airport.LOC_ID)}}">
+     {#
+     above line actually makes function call to get matplotlib to do time series n display
+     code blw just for pythonanywhere.com to force display it - comment it otherwise
+     <img src="/static/images/plots/TimeSeries_{{airport.LOC_ID}}.png">
+     <img src="{{ url_for('static', filename='/'.join(['images', 'plots', 'TimeSeries_'+airport.LOC_ID+'.png'])) }}" />
+     #}
+</div>
+
+<hr>
+
+<!-- THIS TAKES TOO LONG - DISABLE FOR NOW  -->
+<div style="float: center;">
+    <!-- we only have climate zone data for SE QLD locations
+    so if sta we have is not in SE QLD don't attempt to to this plot   -->
+    {% if airport.LOC_ID in ['YBBN', 'YBAF', 'YAMB', 'YBSU', 'YBCG', 'YBOK', 'YTWB'] %}
+        <h3>TS/Fog Diagnostic : Td Variation by Month for {{airport.LOC_ID}}</h3>
+        <p> Note this plots are meant to eyeball Td distribution against TS or Fog outcomes. Its useful as a diagnostic tool for storms between about 00Z (10AM LT) and 05Z (4PM LT).(Median TS onset time is about 05Z (3PM LT) for most locations, so not much use after about this time.) Accessing this page anytime after 05Z until 18Z will give Td variation against Fog outcomes with current Td observations in black.
+        <img src="{{url_for('plot_td', sta = airport.LOC_ID)}}" alt="TD Variation with Months">
+        {#
+        {% if ((time_now|int > 22) or (time_now|int < 6)) %}
+            <!--plot Td variation with TS outcomes-->
+            <img src="{{url_for('plot_td', sta = airport.LOC_ID)}}" alt="TD Variation with Months">
+        {% else %}
+            <!--plot Td variation with FOG outcomes-->
+            <img src="{{url_for('plot_td_fog', sta = airport.LOC_ID)}}" alt="TD Variation with Months">
+
+        {% endif %}
+
+
+        <img src="{{ url_for('static', filename='/'.join(['images', 'plots', 'Td_variation_10am_swarmplot_'+airport.LOC_ID+'.png'])) }}"/>
+        <img src="/static/images/plots/Td_variation_10am_swarmplot_{{airport.LOC_ID}}.png">
+        #}
+
+    {% else %}
+        <p>Don't have access to {{airport.LOC_ID}} archive AWS data. Trial only for SE QLD.</p>
+    {% endif %}
+</div>
+<hr>
+
+
+<div>
+    {#
+       we only have climate zone data for SE QLD locations
+       so if sta we have is now in SE QLD don't attempt to to this plot
+    #}
+
+    {% if airport.LOC_ID in ['YBBN', 'YBAF', 'YAMB', 'YBSU', 'YBCG', 'YBOK', 'YTWB'] %}
+        <h3>Wind Guidance for {{airport.LOC_ID}} based on Brisbane Gradient level winds at 00UTC</h3>
+        <p> Middle 50% of the distribution for each synoptic UTC hour is provided as guidance for surface winds, temperature and QNH.</p>
+        <p> This guidance is based on AWS METAR winds for days when gradient level winds are similar; Simmilarity here deals with these thresholds:
+            <li> +/- 5 knots for 900hPa wind speed and </li>
+            <li> +/- 15 degrees for 900hPa wind direction </li>
+            <li> QNH within 5hPa </li> </p>
+        {{stat | safe}}
+    {% else %}
+        <p>Don't have access to {{airport.LOC_ID}} archive AWS data. Trial only for SE QLD.</p>
+    {% endif %}
+</div>
+</body>
+{% endblock %}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+
+        <!--To make the site prettier, we'll use the popular Bootstrap framework
+        Inside the <head> section of your HTML, before the title, add this:
+        Sourced from https://blog.pythonanywhere.com/121/-->
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+        <title>{% block title %}Fog and Thunderstorm Prediction{% endblock %}</title>
+        <meta name="description"
+              content="Find climatological matches for fog and thunderstorms based on current synoptic parameters.">
+        <!-- <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='css/main.css') }}"> -->
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div class="header-container">
+            <header class="wrapper clearfix">
+                <h1 class="title alpha">
+                    <center><a href="/">Aerodrome Weather Intelligence</a></center>
+                </h1>
+
+                {% block nav %}
+                <!--
+                <ul>
+                    <li><a href={{ url_for('index') }}>Home</a></li>
+                    <li><a href={{ url_for('sonde_update')}}>Upload Sonde</a></li>
+                    <li><a href={{ url_for('faq') }}>FAQ</a></li>
+                    <li><a href="mailto:vinorda@gmail.com">Contact</a></li>
+                </ul>
+                -->
+                <table border=0>
+                <tr><td colspan=2 align=left><a href={{ url_for('index') }}>Home</a></td></tr>
+                <tr><td valign="top" width=154><table border=0>
+                {#
+                <tr><td><a href={{ url_for('airport_information_portal') }}>TAF Intelligence</a></td></tr>
+                <tr><td><a href={{ url_for('aero_intel',taf_id='YBBN') }}>TAF Intelligence</a></td></tr>
+                -#}
+                <tr><td><a href={{ url_for('storm_predict') }}>Thunderstorm Prediction SEQ</a></td></tr>
+                <tr><td><a href={{ url_for('results_FOG_seqld') }}><b>Fog Prediction SEQ<b></b></a></td></tr>
+                <tr><td><a href={{ url_for('gpats') }}>Thunderstorm Climatology</a></td></tr>
+                <tr><td><a href={{ url_for('fog') }}>FOG Climatology</a></td></tr>
+                <tr><td><a href={{ url_for('sonde_update')}}>Sounding Data Update</a></td></tr>
+                <tr><td><a href={{ url_for('faq') }}>FAQ</a></td></tr>
+                <tr><td><a href={{ url_for('credits') }}>Credits / Disclaimer</a></td></tr>
+                <tr><td><a href="mailto:vinorda@gmail.com">Contact</a></td></tr>
+                </table>
+                <td valign="top">
+                {% endblock %}
+            </header>
+        </div>
+
+	    <div class="flash-messages">
+	    {% for category, message in get_flashed_messages(with_categories=true) %}
+    	    <p class="{{ category }}">{{ message | safe }}</p>
+	    {% endfor %}
+	    </div>
+
+        <div class="main-container">
+            <div class="main wrapper clearfix">
+                {% block content %}{% endblock %}
+                <!-- Place this directive ```extends "base.html"```
+                in all html pages where you want to include this
+                base.html template. All content between ```block content```
+                and ```endblock``` in child html page gets inserted HERE!!-->
+            </div> <!-- #main -->
+        </div> <!-- #main-container -->
+
+        <hr>
+
+        <div class="footer-container">
+            <footer class="wrapper">
+                <span>
+                    &#10030;
+                    By <a href="http://www.bom.gov.au">vinorda@bom</a> &#10030;
+                    <a href="mailto:vinorda@gmail.com">Contact</a> &#10030;
+                    <a href="/faq">FAQ</a> &#10030;
+                </span>
+                <span class="float-right">
+
+                    <a href="/static/docs/TS_Analogues.pptx">Documentation</a>
+                        <img src="https://photos3.fotosearch.com/bthumb/CSP/CSP992/donkere-wolk-mascotte-met-clipart__k14672381.jpg"
+                        width="50px">
+                    </a>
+                </span>
+            </footer>
+        </div>
+
+        {% block postscripts %}{% endblock %}
+    </body>
+</html>

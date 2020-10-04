@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Thunderstorm Prediction SE QLD</title>
+	<link rel="stylesheet" type=text/css href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+<body>
+<div id="wrapper">
+<h1>QLD THUNDERSTORM PROBABILITIES FOR 16-JUN-2018<br />(using 10AM synops and latest upper winds)</h1>
+<table>
+<thead>
+<tr><th>Av ID</th><th>Trials/ Successes</th><th>Storm probability (%)</th></thead>
+<tbody>
+  {% for table in tables %}
+    <tr><td><span class="name">{{station}}</span></td><td><span class="curr">{{n_ts}}/{{n_match}}</span></td></tr>
+    <h2>{{titles[loop.index]}}</h2>
+    {{ table|safe }}
+    <br>
+  {% endfor %}
+
+<tbody>
+</table>
+<div id="nav">
+Latest | Next | <a href="liviofog.php?no=-1">Selection Page</a> | <a href="liviofog.php?no=1">Prev</a> | <a href="liviofog.php?no=32">Earliest</a>
+<br /><br />
+<a href="liviofog.php?no=0">Refresh Page</a></div>
+<p class="notes"><strong>Notes:</strong> <span class="curr">XX</span> is the current run of Vinorda's Storm script,
+    <span class="prev">(XX)</span> is the previous run.
+    The menu below the table refers to previous or next runs of the script.
+    The Selection Page gives a list of all current saved outputs.
+    To view the official output, <a href="http://aifs-qld.bom.gov.au/local/qld/ccs/fog/qldfog.shtml">click here</a>.</p>
+   <p>Change state: Qld | <a href="liviofog.php?state=nsw">NSW</a>
+    | <a href="liviofog.php?state=vic">Vic</a> 
+    | <a href="liviofog.php?state=tas">Tas</a> 
+    | <a href="liviofog.php?state=sa">SA</a> 
+    | <a href="liviofog.php?state=wa">WA</a> 
+    | <a href="liviofog.php?state=nt">NT</a> 
+    | </p></div>
+<div style="height: 0;clear: left;"></div>	<div id="bottom_footer" style="height: 16px; background: url('http://aifs-qld.bom.gov.au/local/qld/rfc/includes/images/ui-bg_loop_25_000000_21x21.png'); padding: 2px 15px; margin: 5px 0 0 0; border: 1px solid white; text-align: center;">		
+    <p style="color: white; margin: 0; padding: 0; font-size: 10px;">Page developed by Vinorda, Queensland RFC
+        (<a style="color: white;" href="mailto:brett.harrison@bom.gov.au">vinord.anand@bom.gov.au</a>)</p>	</div></body>
+  </body>
+</html>

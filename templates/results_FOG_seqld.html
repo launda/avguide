@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Fog Prediction SE QLD</title>
+	<link rel="stylesheet" type=text/css href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+
+<h2>Result of Historical Search for SE QLD airports:</h2>
+
+<div>
+    <p>Synop days is number of days of data considered for seasonal match. This is a 2 month window centered on the
+      date for which forecast is sought (28 days either side) and we grab the same window of data for the last 20 years.</p>
+    <br>matches: is number of days out of the seasonal match days that had similar synoptic pattern defined by
+    <ol>
+    <li>gradient wind - wind dir +/- 30 degrees and wind speed +/- 10 knots</li>
+    <li>mslp - or rather QNH +/- 5 hPa</li>
+    <li>T and Td both +/- 5 degrees</li>
+    </ol>
+    <br>fog_cnt is number of fog days in days with matched synoptic pattern.
+    <br><br>
+    <b>Prediction</b>: Fog when the climatological probability is greater than 15%
+    <hr>
+    <br>{% include 'fog_predictions.html' %}
+</div>
+
+<!--Put Submit button to go back to main landing page index.html  action='/' takes you to root folder-->
+<div id='button'>
+	  <form action="/thunderstorm_predictions">
+	    <input type=submit value='Back'>
+	  </form>
+</div>
+
+  </body>
+</html>

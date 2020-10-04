@@ -1,0 +1,13 @@
+<form action="{{ url_for('results_FOG_station', station=airport.LOC_ID) }}" method="post">
+Choice of Synop Times to use for pattern matching : 
+<LABEL FOR="R1">05Z/3PM</LABEL>
+<INPUT TYPE="Radio" Name="UTC" ID="R1" Value="5">
+<LABEL FOR="R2">08Z/6PM</LABEL> 
+<INPUT TYPE="Radio" Name="UTC" ID="R1" Value="8"><br>
+
+Pressure ( QNH ) :<input <input type="text" name="press" value="1012"><br>
+Sfc Temps ( T / Td ):<input <input type="text" name="temps" value="14/10"><br>
+18 or 23Z 900 winds (DDD / SS ):<input <input type="text" name="wind_900" value="230/10"><br>
+<!--Lapse Rate sfc-850: Temp SFC minus Temp 850hPa:<input <input type="text" name="lr_sfc_850" value="8"><br>-->
+<input type="submit" value="PredictFG">
+</form>

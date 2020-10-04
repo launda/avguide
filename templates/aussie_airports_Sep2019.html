@@ -1,0 +1,271 @@
+<!--  an HTML table that lists all the airport details. 
+Flask’s templating language allows us to loop through the data list
+and print out a row for each record.
+
+use the Leaflet JavaScript library to create a map on each detail page showing 
+airport location 
+
+see https://leafletjs.com/examples/quick-start/
+
+To use leaflet, we need to add two lines to our layout.html. 
+The first is the CSS, and the second is the JavaScript.
+
+Leaflet is 2D only.
+If you want 3D, Use openlayers 3. It supports 3d globe views
+If you want 3D, use a 3D map engine, such as CesiumJS.
+
+https://www.sitepoint.com/3d-maps-with-eegeo-and-leaflet/
+A free eeGeo API key is required
+https://accounts.wrld3d.com/#account
+API Key uses vinorda@gmail.com and usual pwd
+
+Change the <script> include we added to <head> to include eegeo.js rather than Leaflet. The eegeo.js file already contains Leaflet, so don’t include both:
+<script src="https://cdn-webgl.eegeo.com/eegeojs/api/v0.1.780/eegeo.js"></script>
+-->
+<html lang="en">
+
+    
+    <head>
+    	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    </head>
+    <!--
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+   integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+   crossorigin=""/> -->
+        <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <!--
+         <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+   integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+   crossorigin=""></script> -->
+
+    <body>
+
+        <header>
+             <h1 class="title alpha">
+                    <center><a href="/">Aerodrome Weather Intelligence</a></center>
+                </h1>
+            <h3>For TAF Intel select airport on the map | For Thunderstorm Probabilities 
+                <a href={{ url_for('storm_predict') }}>click here</a></h3>
+
+            <div class="byline">
+                By <a href="http://vinorda.pythonanywhere.com/">vinorda@CAI - Central Airport Intelligence!</a>
+            </div>
+        </header>
+
+        <!--need to give Leaflet a place to put the map, and MUST give that map a height 
+        make a div with the id of map, and give it a height with inline style. -->
+
+        <div id="mapid" style="width:100%; height:600px;"></div>
+
+        <hr>  <!-- Put table below the leaflet map div grop -->
+
+        <table border=1 cellpadding=7>
+            <!--
+            <tr><td>
+                <h3>For Thunderstorm Probabilities 
+                <a href={{ url_for('storm_predict') }}>click here</a></h3>
+                </td></tr> -->   
+            <tr> <!-- do row for table column headers -->
+                <th>Airport_ID</th>
+                <th>Area</th>
+                <th>Lat</th>
+                <th>Long</th>
+                <th>Type</th>
+                <th>Reg</th>
+                <th>State</th>
+                <th>HAM ceiling (ft)</th>
+                <th>HAM vis (m)</th>
+                <th>SAM ceiling(ft)</th>
+                <th>SAM vis (m)</th>
+                <th>MSA (ft)</th>
+            </tr>
+            <!-- loop thru each record and stuff into table row -->
+            {% for obj in object_list %}
+            <tr> 
+                <!-- add a hyperlink to each detail page to the table -->
+                <td><a href="{{url_for('aero_intel',taf_id=obj.LOC_ID)}}">{{ obj.Location}}</a>
+                {#  <td><a href="/api/v1/resources/aero_intel?taf_id={{obj.LOC_ID}}">{{ obj.Location}}
+                    </a></td> #}
+                <td>{{ obj.AREA }}</td>
+                <td>{{ obj.Lat }}</td>
+                <td>{{ obj.Long }}</td>
+                <td>{{ obj.Type }}</td>
+                <td>{{ obj.Reg }}</td>
+                <td>{{ obj.State }}</td>
+                <td>{{ obj.HAM_cld_ft }}</td>
+                <td>{{ obj.HAM_vis_m }}</td>
+                <td>{{ obj.SAM_cld_ft }}</td>
+                <td>{{ obj.SAM_vis_m }}</td>
+                <td>{{ obj.MSA }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+
+
+        <!-- NOW need to create a map -two steps: first, 
+            initialize the map, and 
+            then to draw the basemap. -->
+
+        <script type="text/javascript">
+        	//// The first parameter are the coordinates of the center of the map
+            // The second parameter is the zoom level
+            // By default (as we didn’t pass any options when creating the map instance), 
+            // all mouse and touch interactions on the map are enabled, and it has zoom and attribution controls.
+
+            //Note that setView call also returns the map object — most Leaflet methods act like this when they don’t return //an explicit value, which allows convenient jQuery-like method chaining
+
+            var mymap = L.map('mapid').setView([-20, 135], 5);
+
+            // Next we’ll add a tile layer to add to our map - it’s a Mapbox Streets tile layer
+            // Creating a tile layer usually involves setting the URL template for the tile images, 
+            // the attribution text and the maximum zoom level of the layer. Here we’ll use the mapbox.streets tiles from 
+            // Mapbox’s “Classic maps” (in order to use tiles from Mapbox, you must also request an access token).
+
+
+            // {s}, {z}, {x} and {y} are placeholders for map tiles
+            // {x} and {y} are the x/y of where you are on the map
+            // {z} is the zoom level
+            // {s} is the subdomain of cartodb
+
+            var osmLayer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 15,
+                attribution: 'Data, imagery and map information provided by <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> and contributors.'
+            });
+            mymap.addLayer(osmLayer);
+
+            // see https://leafletjs.com/examples/geojson/
+            // GeoJSON is a format for encoding a variety of geographic data structures […]. A GeoJSON object may represent a region of space (a Geometry), a spatially bounded entity (a Feature), or a list of Features (a FeatureCollection). GeoJSON supports the following geometry types: Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, and GeometryCollection. Features in GeoJSON contain a Geometry object and additional properties, and a FeatureCollection contains a list of Features.
+
+
+            {#  Features in GeoJSON contain a Geometry object and additional properties
+            var myAirport_geojson_Feature = {
+    			"type": "Feature",
+   				"properties": {
+        			"location": "{{ obj.Location }}",
+                    "id": "{{ obj.LOC_ID }}"
+    			},
+    			"geometry": {
+        			"type": "Point",
+        			"coordinates": [{{ obj.Long }}, {{ obj.Lat }}]
+    			}
+			};
+
+			The ABV just defines just one Feature, we need a collections of Features
+			as we have 100s of airports, each airport is a row or Feature
+			#}
+
+            var myAirports_geojson_FeatureColln = {
+              "type": "FeatureCollection", // FeatureCollection contains a list of Features
+              "features": [				   // now define a list [] of Features
+                {% for obj in object_list %} //loop thru all json entries and add to collection
+                {
+                  "type": "Feature",
+                  "properties": {
+                    "location": "{{ obj.Location }}",
+                    "id": "{{ obj.LOC_ID }}"
+                  },
+                  "geometry": {
+                    "type": "Point",
+                    "coordinates": [{{ obj.Long }}, {{ obj.Lat }}]
+                  }
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+              ]
+            };
+            {#
+            // GeoJSON objects are added to the map through a GeoJSON layer
+            // 1st way: is create geoJSON layer and add to map at same time
+            // L.geoJSON(geojsonFeature).addTo(map);
+
+            // 2nd way: is 1st create a geojson layer L.jeoJSON() using Feature Collection
+            // and later on add to map
+            // var dataLayer = L.geoJson(myAirports_geojson_FeatureColln);
+            // map.addLayer(dataLayer);
+
+            // 3rd way: create an empty GeoJSON layer,assign it to a variable and add to map
+            // then later on add features to it
+            // var myLayer = L.geoJSON().addTo(map);
+			// myLayer.addData(myAirports_geojson_FeatureColln);
+
+            // we do it 2nd way: 1st create geoJSON layer with 
+            // and inline function to add pop up for eachFeature
+            // wrap the airport location in a hyperlink to airports detail page
+
+            /* url_for() not work inside jscript 
+            see https://www.reddit.com/r/flask/comments/6di61d/url_for_and_jqueryjavascript/
+            var dataLayer = L.geoJSON(myAirports_geojson_FeatureColln, {
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup(
+                        '<a href="' + my_url +  '?taf_id='+ feature.properties.id + '">' +
+                            feature.properties.location +
+                        '</a>'
+                    );
+                }
+            });
+            */
+   			/* don't change icons - I like big blue !!!
+            var blackIcon = L.Icon.extend({
+                options: {
+                    iconUrl: "{{ url_for('static', filename='marker-24.png') }}",
+                    iconSize: [24, 24]
+                }
+            });
+            */
+            /*
+            onEachFeature option is a function that gets called on each feature before adding it to a GeoJSON layer. A common reason to use this option is to attach a popup to features when they are clicked.
+            see https://leafletjs.com/examples/geojson/
+            USAGE
+            function onEachFeature(feature, layer) {
+                // does this feature have a property named popupContent?
+                 if (feature.properties && feature.properties.popupContent) {
+                 layer.bindPopup(feature.properties.popupContent);
+                }
+            }
+
+            var geojsonFeature = {
+                "type": "Feature",
+                "properties": {
+                    "name": "Coors Field",
+                    "amenity": "Baseball Stadium",
+                    "popupContent": "This is where the Rockies play!"
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [-104.99404, 39.75621]
+                }
+            };
+
+            L.geoJSON(geojsonFeature, {
+                onEachFeature: onEachFeature
+            }).addTo(map);
+
+            L.marker([{{ airport.lat }}, {{ airport.long }}]).addTo(map)
+             .bindPopup("<strong>Brisbane Airport</strong>").openPopup();
+
+            First, in the backend, all of the template blanks (i.e. {{ }}) are filled in. After this happens, {{ airport.lat }} becomes something like -26.701.
+            
+            The page is sent to the browser, and then the JavaScript is run. So by the time Chrome sees it, all of those {{ }} have been replaced with actual values. Only Flask sees the {{ }} pieces! 
+            */
+            #}
+            var dataLayer = L.geoJSON(myAirports_geojson_FeatureColln, {
+                /* don't change icons - I like big blue !!!
+            	pointToLayer: function (feature, latlng) {
+                    return L.marker(latlng, {icon: new blackIcon()});
+                }, */
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup(
+                        '<a href="/api/v1/resources/aero_intel?taf_id=' + feature.properties.id + '">' +
+                            feature.properties.location +
+                        '</a>'
+                    );
+                }
+            });
+           
+            mymap.addLayer(dataLayer);
+        </script>
+    </body>
+</html>
