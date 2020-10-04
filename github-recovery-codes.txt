@@ -1,0 +1,752 @@
+
+ssh
+
+git@github.com:launda/avguide.git
+
+
+https
+https://github.com/launda/avguide.git
+
+
+
+Quick setup — if you’ve done this kind of thing before
+or
+Get started by creating a new file or uploading an existing file. We recommend every repository include a README, LICENSE, and .gitignore. 
+
+
+…or create a new repository on the command line
+
+echo "# avguide" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/launda/avguide.git
+git push -u origin main
+                
+
+…or push an existing repository from the command line
+
+git remote add origin https://github.com/launda/avguide.git
+git branch -M main
+git push -u origin main
+
+…or import code from another repository
+
+You can initialize this repository with code from a Subversion, Mercurial, or TFS project.
+
+
+f097e-5fd8b
+d3c6e-b171d
+3fa17-9ab32
+39232-34095
+3e0ed-329ef
+7387c-3053d
+4acbe-de71a
+f2270-1bfc2
+cb911-acfbc
+66f78-a8144
+bcb52-ab2c4
+f5808-da692
+ed5b3-a4ee2
+d95a4-44b7f
+8feca-02924
+1ee94-ffd95
+
+
+
+Add my avguide project to github
+
+
+[bou@bous-fed31 ~]$ cd /home/bou/shared/stats-R/flask_projects/avguide
+
+[bou@bous-fed31 avguide]$ 
+
+[bou@bous-fed31 avguide]$ git init
+Initialized empty Git repository in /mnt/shared/stats-R/flask_projects/avguide/.git/
+
+[bou@bous-fed31 avguide]$ ls -altr 
+
+drwxrwxrwx. 11 bou bou      4096 Oct  4 16:40 .
+drwxrwxr-x.  7 bou bou      4096 Oct  4 16:40 .git   <<<-----------------
+drwxrwxrwx.  3 bou bou      4096 Jul 24  2018 heatmaps
+drwxrwxrwx.  6 bou bou      4096 May  1  2019 env
+-rwxrwxrwx.  1 bou bou       103 May  2  2019 yourapplication.cgi
+-rwxrwxrwx.  1 bou bou      1318 May  2  2019 yourapplication.wsgi
+-rwxrwxrwx.  1 bou bou     82681 May  3  2019 python3_setup_m93p.txt
+-rwxrwxrwx.  1 bou bou     25707 Jun 26  2019 resources.txt
+-rwxrwxrwx.  1 bou bou     64263 Jun 26  2019 DeployFlaskWebAppNginx.txt
+-rwxrwxrwx.  1 bou bou     93655 Sep 11  2019 new_fog-20190911T024731Z-001.zip
+drwxrwxrwx.  2 bou bou      4096 Nov  4  2019 cases
+-rwxrwxr-x.  1 bou bou    182432 Jan  6  2020 utility_functions_sep2018.py.bkp.py
+-rw-rw-r--.  1 bou bou     81519 Mar 28  2020 analyse_robert_fog_files.txt
+-rwxrwxrwx.  1 bou bou 677087489 Mar 29  2020 HM01X_Data_040842.txt
+-rwxrwxrwx.  1 bou bou    195251 Apr 20 11:52 utility_functions_sep2018_bkpApr2020.py
+-rw-rw-r--.  1 bou bou         0 Apr 21 12:04 smb_install.txt
+-rw-rw-r--.  1 bou bou     19653 May 12 06:18 testapp_printable.py
+-rw-rw-r--.  1 bou bou     19933 May 14 10:21 test_app.py
+-rw-rw-r--.  1 bou bou      3962 May 14 13:42 plotting.py
+-rw-rw-r--.  1 bou bou      9572 May 14 18:49 test_app_modules.py
+-rw-rw-r--.  1 bou bou     16611 May 14 20:12 test_app_plots.py
+-rw-rw-r--.  1 bou bou    638942 May 14 20:13 Python_Seaborn_Cheat_Sheet.pdf
+drwxrwxr-x.  2 bou bou      4096 May 27 08:13 .vscode
+-rw-rw-r--.  1 bou bou      9356 Jun  2 09:46 fog_dates.py
+-rw-rw-r--.  1 bou bou    698609 Jun  2 12:35 YBOK3auto.txt
+-rw-rw-r--.  1 bou bou   1305717 Jun  2 12:36 YTWB2auto.csv
+-rw-rw-r--.  1 bou bou   2015856 Jun  2 12:36 YBCG2auto.csv
+-rw-rw-r--.  1 bou bou   2010443 Jun  2 12:37 YBSU2auto.csv
+-rw-rw-r--.  1 bou bou   2025015 Jun  2 12:37 YBRK2auto.csv
+-rw-rw-r--.  1 bou bou      8358 Jun  3 15:58 fog_compare.py
+-rw-rw-r--.  1 bou bou     17383 Jun 10 18:20 fog_analogues.py
+-rw-rw-r--.  1 bou bou     46908 Jun 11 20:33 fog_plots.py
+drwxrwxrwx. 23 bou bou      4096 Jun 18 10:25 ..
+-rw-rw-r--.  1 bou bou   4566585 Jun 18 14:26 fog_plots_rfc45.ipynb
+-rw-rw-r--.  1 bou bou   2359431 Jun 29 08:52 fogy.tar.gz
+-rwxr--r--.  1 bou bou   5474758 Jun 29 09:25 fog_plots_hp_450.ipynb
+-rwxrwxrwx.  1 bou bou   1956811 Jun 29 13:27 thunderstorm_forecasting_KNN_2019_copy.ipynb
+-rw-rw-r--.  1 bou bou    201800 Jun 30 10:06 utility_functions_sep2018_new.py
+-rw-rw-r--.  1 bou bou    201713 Jun 30 10:46 utility_functions_sep2018_rfc_June26_2020.py
+drwxrwxrwx.  6 bou bou      4096 Jul 24 11:44 app
+-rw-rw-r--.  1 bou bou   9984272 Jul 26 09:47 fog_plots_hp_450_June30.html
+-rwxrwxrwx.  1 bou bou        72 Aug  9 21:33 WSGI.py
+-rwxrwxrwx.  1 bou bou      4478 Aug  9 21:34 forms.py
+-rw-rw-r--.  1 bou bou  14157862 Aug 12 20:32 fog_plots_hp_450_July20.ipynb
+-rw-rw-r--.  1 bou bou   4725039 Aug 12 21:11 fog_plots_hp_450_Aug10.html
+-rw-rw-r--.  1 bou bou    158111 Aug 12 21:15 fog_plots_hp_450_Aug10.py
+-rw-rw-r--.  1 bou bou    222829 Aug 12 21:21 fog_plots_hp_450_Aug11.ipynb
+-rw-rw-r--.  1 bou bou   3956811 Aug 12 21:55 fog_plots_hp_450_Aug10.ipynb
+-rw-rw-r--.  1 bou bou    430917 Aug 13 14:52 Clustering-Dimensionality-Reduction_Clustering_metrics.ipynb
+-rw-rw-r--.  1 bou bou    158213 Aug 27 11:33 fog_plots_hp_450_July26.py
+-rw-rw-r--.  1 bou bou   4021657 Aug 27 11:36 fog_plots_hp_450_July26.ipynb
+-rw-rw-r--.  1 bou bou      3105 Aug 28 09:24 requirements.txt
+-rw-r--r--.  1 bou bou     29124 Aug 28 10:00 soi_data.txt
+-rw-rw-r--.  1 bou bou         0 Aug 28 10:58 geckodriver.log
+-rw-rw-r--.  1 bou bou    177629 Sep 15 15:51 Fog_Forecasting.ipynb
+-rw-rw-r--.  1 bou bou     19953 Sep 26 15:55 ANZ1.csv
+-rw-rw-r--.  1 bou bou     52167 Sep 26 16:18 credit.csv
+-rw-rw-r--.  1 bou bou    185486 Sep 26 16:52 finance.ipynb
+-rw-rw-r--.  1 bou bou  15131316 Sep 28 07:58 fog_study_work.ipynb
+drwxrwxr-x.  2 bou bou      4096 Sep 28 07:58 .ipynb_checkpoints
+-rw-rw-r--.  1 bou bou     54060 Sep 28 12:18 fogger_aws5_sonde23_35days_Wnd10_QNH4_noT_Td3_TmTd3.csv
+-rw-rw-r--.  1 bou bou  12580179 Sep 28 12:22 fog_study_hp.ipynb
+-rw-rw-r--.  1 bou bou  15131383 Sep 29 06:27 fog_study.ipynb
+-rw-rw-r--.  1 bou bou      6874 Sep 30 00:36 extract_gpats_adamprd_2020.py
+drwxrwxr-x.  2 bou bou      4096 Oct  2 10:19 gpats
+-rw-r--r--.  1 bou bou      9719 Oct  3 14:16 TS_preds_fail_new_data_OCT2020.txt
+-rwxrw-r--.  1 bou bou    211994 Oct  3 14:19 utility_functions_sep2018.py
+drwxrwxrwx.  2 bou bou      4096 Oct  3 14:19 __pycache__
+-rw-rw-r--.  1 bou bou    322515 Oct  4 14:26 tools4data-mining2020_newSep2020.txt
+
+
+
+[bou@bous-fed31 avguide]$ git remote add origin git@github.com:launda/avguide.git
+
+
+[bou@bous-fed31 avguide]$ git add forms.py
+
+
+[bou@bous-fed31 avguide]$ git add WSGI.py
+
+
+[bou@bous-fed31 avguide]$ # Stage the file for commit to your local repository.
+
+[bou@bous-fed31 avguide]$ # Commit the file that you've staged in your local repository.
+
+[bou@bous-fed31 avguide]$ git commit -m "Add forms and WSGI to github repo"
+
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: unable to auto-detect email address (got 'bou@bous-fed31.(none)')
+
+
+
+
+
+
+[bou@bous-fed31 avguide]$ git config --global user.email "vinorda@gmail.com"
+
+[bou@bous-fed31 avguide]$ git config --global user.name "launda"
+
+[bou@bous-fed31 avguide]$ git commit -m "Add forms and WSGI to github repo"
+[master (root-commit) 1709ba3] Add forms and WSGI to github repo
+ 2 files changed, 77 insertions(+)
+ create mode 100755 WSGI.py
+ create mode 100755 forms.py
+
+
+[bou@bous-fed31 avguide]$ git push origin master
+The authenticity of host 'github.com (13.237.44.5)' can't be established.
+RSA key fingerprint is SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'github.com,13.237.44.5' (RSA) to the list of known hosts.
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+
+https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/connecting-to-github-with-ssh
+
+
+
+[bou@bous-fed31 avguide]$ ssh -vT git@github.com
+OpenSSH_8.1p1, OpenSSL 1.1.1g FIPS  21 Apr 2020
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Reading configuration data /etc/ssh/ssh_config.d/05-redhat.conf
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: configuration requests final Match pass
+debug1: re-parsing configuration
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Reading configuration data /etc/ssh/ssh_config.d/05-redhat.conf
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: Connecting to github.com [13.237.44.5] port 22.
+debug1: Connection established.
+debug1: identity file /home/bou/.ssh/id_rsa type -1
+debug1: identity file /home/bou/.ssh/id_rsa-cert type -1
+debug1: identity file /home/bou/.ssh/id_dsa type -1
+debug1: identity file /home/bou/.ssh/id_dsa-cert type -1
+debug1: identity file /home/bou/.ssh/id_ecdsa type -1
+debug1: identity file /home/bou/.ssh/id_ecdsa-cert type -1
+debug1: identity file /home/bou/.ssh/id_ed25519 type -1
+debug1: identity file /home/bou/.ssh/id_ed25519-cert type -1
+debug1: identity file /home/bou/.ssh/id_xmss type -1
+debug1: identity file /home/bou/.ssh/id_xmss-cert type -1
+debug1: Local version string SSH-2.0-OpenSSH_8.1
+debug1: Remote protocol version 2.0, remote software version babeld-2221820e
+debug1: no match: babeld-2221820e
+debug1: Authenticating to github.com:22 as 'git'
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: algorithm: curve25519-sha256
+debug1: kex: host key algorithm: rsa-sha2-512
+debug1: kex: server->client cipher: aes256-gcm@openssh.com MAC: <implicit> compression: none
+debug1: kex: client->server cipher: aes256-gcm@openssh.com MAC: <implicit> compression: none
+debug1: kex: curve25519-sha256 need=32 dh_need=32
+debug1: kex: curve25519-sha256 need=32 dh_need=32
+debug1: expecting SSH2_MSG_KEX_ECDH_REPLY
+debug1: Server host key: ssh-rsa SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8
+debug1: Host 'github.com' is known and matches the RSA host key.
+debug1: Found key in /home/bou/.ssh/known_hosts:3
+debug1: rekey out after 4294967296 blocks
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: rekey in after 4294967296 blocks
+debug1: Will attempt key: /home/bou/.ssh/id_rsa 
+debug1: Will attempt key: /home/bou/.ssh/id_dsa 
+debug1: Will attempt key: /home/bou/.ssh/id_ecdsa 
+debug1: Will attempt key: /home/bou/.ssh/id_ed25519 
+debug1: Will attempt key: /home/bou/.ssh/id_xmss 
+debug1: SSH2_MSG_EXT_INFO received
+debug1: kex_input_ext_info: server-sig-algs=<ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,rsa-sha2-512,rsa-sha2-256,ssh-rsa,ssh-dss>
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: publickey
+debug1: Next authentication method: publickey
+debug1: Trying private key: /home/bou/.ssh/id_rsa
+debug1: Trying private key: /home/bou/.ssh/id_dsa
+debug1: Trying private key: /home/bou/.ssh/id_ecdsa
+debug1: Trying private key: /home/bou/.ssh/id_ed25519
+debug1: Trying private key: /home/bou/.ssh/id_xmss
+debug1: No more authentication methods to try.
+git@github.com: Permission denied (publickey).
+
+
+
+
+
+[bou@bous-fed31 avguide]$ ssh-add -l -E sha256
+The agent has no identities.
+
+
+Generating a new SSH key
+Paste the text below, substituting in your GitHub email address.
+This creates a new ssh key, using the provided email as a label.
+
+[bou@bous-fed31 avguide]$ ssh-keygen -t rsa -b 4096 -C vinorda@gmail.com
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/bou/.ssh/id_rsa): github_rsa_key_pair
+Enter passphrase (empty for no passphrase):   (the usual pwd)
+Enter same passphrase again: 
+Your identification has been saved in github_rsa_key_pair.
+Your public key has been saved in github_rsa_key_pair.pub.
+The key fingerprint is:
+SHA256:nFfhZ/whuoINKIOOKs0gy1khwcfFq4W6EQhzEqgBlXk vinorda@gmail.com
+The key's randomart image is:
++---[RSA 4096]----+
+|*oooo.      .    |
+|*o+oE.     . o   |
+|+=o.. .     o.+. |
+|oo.o o.. . ..o...|
+| .+o+. .S ..    .|
+|=o oo   +.  .    |
+|+*=    . o .     |
+|++o       .      |
+|o                |
++----[SHA256]-----+
+
+
+
+
+Note I have used different key namses - deefault oes are id_rsa
+
+[bou@bous-fed31 avguide]$ ls -ltr github*
+-rw-------. 1 bou bou 3434 Oct  4 16:58 github_rsa_key_pair  <<--(id_rsa)
+-rw-r--r--. 1 bou bou  743 Oct  4 16:58 github_rsa_key_pair.pub   <<--(id_rsa.pub)
+
+
+
+
+Adding your SSH key to the ssh-agent
+
+Before adding a new SSH key to the ssh-agent to manage your keys, you should have checked for existing SSH keys and generated a new SSH key.
+
+    Start the ssh-agent in the background.
+
+[bou@bous-fed31 avguide]$ eval "$(ssh-agent -s)"
+Agent pid 8497
+
+
+ # https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+
+
+[bou@bous-fed31 avguide]$ ssh-add ./github_rsa_key_pair
+Enter passphrase for ./github_rsa_key_pair: 
+Identity added: ./github_rsa_key_pair (vinorda@gmail.com)
+
+
+
+install clipboard to copy stuff to clipboard
+
+
+[bou@bous-fed31 avguide]$ sudo yum install xclip
+[
+xclip-0.13-8.fc31.x86_64.rpm    
+Installed:
+  xclip-0.13-8.fc31.x86_64                                                                           
+
+
+[bou@bous-fed31 avguide]$ ls -ltr github*
+-rw-------. 1 bou bou 3434 Oct  4 16:58 github_rsa_key_pair
+-rw-r--r--. 1 bou bou  743 Oct  4 16:58 github_rsa_key_pair.pub
+
+Add your SSH private key to the ssh-agent. I
+# copies content of public key to clipbpoard
+[bou@bous-fed31 avguide]$ xclip -sel clip < ./github_rsa_key_pair.pub
+
+[bou@bous-fed31 avguide]$ # got to githun ssh keys page adn paste pub key
+[bou@bous-fed31 avguide]$ # https://github.com/settings/keys
+
+
+
+[bou@bous-fed31 avguide]$ git push origin master
+Warning: Permanently added the RSA host key for IP address '52.64.108.95' to the list of known hosts.
+Enumerating objects: 4, done.
+Counting objects: 100% (4/4), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 2.02 KiB | 2.02 MiB/s, done.
+Total 4 (delta 0), reused 0 (delta 0)
+To github.com:launda/avguide.git
+ * [new branch]      master -> master
+
+
+
+[bou@bous-fed31 avguide]$ # yahoo - got two files added there
+
+
+[bou@bous-fed31 avguide]$ # lets add more files using the it hub gui
+
+added the main module utility_functions and templaates folder
+
+
+
+
+
+
+
+
+[bou@bous-fed31 avguide]$ cp github_rsa* /home/bou/.ssh/
+
+
+[bou@bous-fed31 avguide]$ ls -ltr /home/bou/.ssh/
+total 12
+-rw-r--r--. 1 bou bou 1617 Oct  4 17:07 known_hosts
+-rw-r--r--. 1 bou bou  743 Oct  4 20:20 github_rsa_key_pair.pub
+-rw-------. 1 bou bou 3434 Oct  4 20:20 github_rsa_key_pair
+
+
+[bou@bous-fed31 avguide]$ ls -altr /home/bou/.ssh/
+total 24
+-rw-r--r--.  1 bou bou 1617 Oct  4 17:07 known_hosts
+drwx--x---+ 52 bou bou 4096 Oct  4 17:36 ..
+-rw-r--r--.  1 bou bou  743 Oct  4 20:20 github_rsa_key_pair.pub
+-rw-------.  1 bou bou 3434 Oct  4 20:20 github_rsa_key_pair
+drwx------.  2 bou bou 4096 Oct  4 20:20 .
+
+
+[bou@bous-fed31 avguide]$ # https://www.cyberciti.biz/faq/force-ssh-client-to-use-given-private-key-identity-file/
+
+
+[bou@bous-fed31 avguide]$ ssh -i /home/bou/.ssh/github_rsa_key_pair -vT git@github.com
+OpenSSH_8.1p1, OpenSSL 1.1.1g FIPS  21 Apr 2020
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Reading configuration data /etc/ssh/ssh_config.d/05-redhat.conf
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: configuration requests final Match pass
+debug1: re-parsing configuration
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Reading configuration data /etc/ssh/ssh_config.d/05-redhat.conf
+debug1: Reading configuration data /etc/crypto-policies/back-ends/openssh.config
+debug1: Connecting to github.com [52.64.108.95] port 22.
+debug1: Connection established.
+debug1: identity file /home/bou/.ssh/github_rsa_key_pair type 0
+debug1: identity file /home/bou/.ssh/github_rsa_key_pair-cert type -1
+debug1: Local version string SSH-2.0-OpenSSH_8.1
+debug1: Remote protocol version 2.0, remote software version babeld-2221820e
+debug1: no match: babeld-2221820e
+debug1: Authenticating to github.com:22 as 'git'
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: algorithm: curve25519-sha256
+debug1: kex: host key algorithm: rsa-sha2-512
+debug1: kex: server->client cipher: aes256-gcm@openssh.com MAC: <implicit> compression: none
+debug1: kex: client->server cipher: aes256-gcm@openssh.com MAC: <implicit> compression: none
+debug1: kex: curve25519-sha256 need=32 dh_need=32
+debug1: kex: curve25519-sha256 need=32 dh_need=32
+debug1: expecting SSH2_MSG_KEX_ECDH_REPLY
+debug1: Server host key: ssh-rsa SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8
+debug1: Host 'github.com' is known and matches the RSA host key.
+debug1: Found key in /home/bou/.ssh/known_hosts:3
+debug1: rekey out after 4294967296 blocks
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: rekey in after 4294967296 blocks
+debug1: Will attempt key: /home/bou/.ssh/github_rsa_key_pair RSA SHA256:nFfhZ/whuoINKIOOKs0gy1khwcfFq4W6EQhzEqgBlXk explicit agent
+debug1: SSH2_MSG_EXT_INFO received
+debug1: kex_input_ext_info: server-sig-algs=<ssh-ed25519-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,rsa-sha2-512,rsa-sha2-256,ssh-rsa,ssh-dss>
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: publickey
+debug1: Next authentication method: publickey
+debug1: Offering public key: /home/bou/.ssh/github_rsa_key_pair RSA SHA256:nFfhZ/whuoINKIOOKs0gy1khwcfFq4W6EQhzEqgBlXk explicit agent
+debug1: Server accepts key: /home/bou/.ssh/github_rsa_key_pair RSA SHA256:nFfhZ/whuoINKIOOKs0gy1khwcfFq4W6EQhzEqgBlXk explicit agent
+debug1: Authentication succeeded (publickey).
+Authenticated to github.com ([52.64.108.95]:22).
+debug1: channel 0: new [client-session]
+debug1: Entering interactive session.
+debug1: pledge: network
+debug1: Sending environment.
+debug1: Sending env XMODIFIERS = @im=none
+debug1: Sending env LANG = en_AU.UTF-8
+debug1: client_input_channel_req: channel 0 rtype exit-status reply 0
+Hi launda! You've successfully authenticated, but GitHub does not provide shell access.
+debug1: channel 0: free: client-session, nchannels 1
+Transferred: sent 3544, received 2756 bytes, in 0.4 seconds
+Bytes per second: sent 8008.7, received 6228.0
+debug1: Exit status 1
+
+
+bou@bous-fed31 avguide]$ 
+[bou@bous-fed31 avguide]$ 
+[bou@bous-fed31 avguide]$ git status
+On branch master
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.ipynb_checkpoints/
+	.vscode/
+	ANZ1.csv
+	Clustering-Dimensionality-Reduction_Clustering_metrics.ipynb
+	DeployFlaskWebAppNginx.txt
+	Fog_Forecasting.ipynb
+	HM01X_Data_040842.txt
+	Python_Seaborn_Cheat_Sheet.pdf
+	TS_preds_fail_new_data_OCT2020.txt
+	YBCG2auto.csv
+	YBOK3auto.txt
+	YBRK2auto.csv
+	YBSU2auto.csv
+	YTWB2auto.csv
+	__pycache__/
+	analyse_robert_fog_files.txt
+	app/
+	cases/
+	credit.csv
+	env/
+	extract_gpats_adamprd_2020.py
+	finance.ipynb
+	fog_analogues.py
+	fog_compare.py
+	fog_dates.py
+	fog_plots.py
+	fog_plots_hp_450.ipynb
+	fog_plots_hp_450_Aug10.html
+	fog_plots_hp_450_Aug10.ipynb
+	fog_plots_hp_450_Aug10.py
+	fog_plots_hp_450_Aug11.ipynb
+	fog_plots_hp_450_July20.ipynb
+	fog_plots_hp_450_July26.ipynb
+	fog_plots_hp_450_July26.py
+	fog_plots_hp_450_June30.html
+	fog_plots_rfc45.ipynb
+	fog_study.ipynb
+	fog_study_hp.ipynb
+	fog_study_work.ipynb
+	fogger_aws5_sonde23_35days_Wnd10_QNH4_noT_Td3_TmTd3.csv
+	fogy.tar.gz
+	geckodriver.log
+	github-recovery-codes.txt
+	github_keys.tar.gz
+	github_rsa_key_pair
+	github_rsa_key_pair.pub
+	github_stuff.png
+	gpats/
+	heatmaps/
+	new_fog-20190911T024731Z-001.zip
+	plotting.py
+	python3_setup_m93p.txt
+	requirements.txt
+	resources.txt
+	smb_install.txt
+	soi_data.txt
+	test_app.py
+	test_app_modules.py
+	test_app_plots.py
+	testapp_printable.py
+	thunderstorm_forecasting_KNN_2019_copy.ipynb
+	tools4data-mining2020_newSep2020.txt
+	utility_functions_sep2018.py
+	utility_functions_sep2018.py.bkp.py
+	utility_functions_sep2018_bkpApr2020.py
+	utility_functions_sep2018_new.py
+	utility_functions_sep2018_rfc_June26_2020.py
+	yourapplication.cgi
+	yourapplication.wsgi
+
+nothing added to commit but untracked files present (use "git add" to track)
+[bou@bous-fed31 avguide]$ git add github-recovery-codes.txt
+[bou@bous-fed31 avguide]$ 
+
+[git add .]
+
+This is the first command that you'll run after making some changes to the project files. 
+
+
+[git commit -am "your commit message"]
+
+git commit -am adds the changed files into a commit with a commit message as stated inside the inverted commas(in the hading). Using the option -am allows you to add and create a message for the commit in one command.
+
+The -a flag is used in git to add all the files to your commit and then you'll have to run another command where you write your commit message.
+
+The m flag is used for connecting a commit message to your commit for example `git commit -m "your message".
+
+
+
+
+
+[bou@bous-fed31 avguide]$ git commit -am "just comit some git related help files"
+[master 128a64e] just comit some git related help files
+ 1 file changed, 552 insertions(+)
+ create mode 100644 github-recovery-codes.txt
+[bou@bous-fed31 avguide]$ git log --oneline
+128a64e (HEAD -> master) just comit some git related help files
+1709ba3 (origin/master) Add forms and WSGI to github repo
+[bou@bous-fed31 avguide]$ git push origin master
+To github.com:launda/avguide.git
+ ! [rejected]        master -> master (fetch first)
+error: failed to push some refs to 'git@github.com:launda/avguide.git'
+hint: Updates were rejected because the remote contains work that you do
+hint: not have locally. This is usually caused by another repository pushing
+hint: to the same ref. You may want to first integrate the remote changes
+hint: (e.g., 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[bou@bous-fed31 avguide]$ # maybe because I used the github gui to add many files to remote github repo
+[bou@bous-fed31 avguide]$ git pull
+remote: Enumerating objects: 44, done.
+remote: Counting objects: 100% (44/44), done.
+remote: Compressing objects: 100% (43/43), done.
+remote: Total 43 (delta 10), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (43/43), 4.26 MiB | 1.63 MiB/s, done.
+From github.com:launda/avguide
+   1709ba3..52aff03  master     -> origin/master
+There is no tracking information for the current branch.
+Please specify which branch you want to merge with.
+See git-pull(1) for details.
+
+    git pull <remote> <branch>
+
+If you wish to set tracking information for this branch you can do so with:
+
+    git branch --set-upstream-to=origin/<branch> master
+
+[bou@bous-fed31 avguide]$ git status
+On branch master
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.ipynb_checkpoints/
+	.vscode/
+	ANZ1.csv
+	Clustering-Dimensionality-Reduction_Clustering_metrics.ipynb
+	DeployFlaskWebAppNginx.txt
+	Fog_Forecasting.ipynb
+	HM01X_Data_040842.txt
+	Python_Seaborn_Cheat_Sheet.pdf
+	TS_preds_fail_new_data_OCT2020.txt
+	YBCG2auto.csv
+	YBOK3auto.txt
+	YBRK2auto.csv
+	YBSU2auto.csv
+	YTWB2auto.csv
+	__pycache__/
+	analyse_robert_fog_files.txt
+	app/
+	cases/
+	credit.csv
+	env/
+	extract_gpats_adamprd_2020.py
+	finance.ipynb
+	fog_analogues.py
+	fog_compare.py
+	fog_dates.py
+	fog_plots.py
+	fog_plots_hp_450.ipynb
+	fog_plots_hp_450_Aug10.html
+	fog_plots_hp_450_Aug10.ipynb
+	fog_plots_hp_450_Aug10.py
+	fog_plots_hp_450_Aug11.ipynb
+	fog_plots_hp_450_July20.ipynb
+	fog_plots_hp_450_July26.ipynb
+	fog_plots_hp_450_July26.py
+	fog_plots_hp_450_June30.html
+	fog_plots_rfc45.ipynb
+	fog_study.ipynb
+	fog_study_hp.ipynb
+	fog_study_work.ipynb
+	fogger_aws5_sonde23_35days_Wnd10_QNH4_noT_Td3_TmTd3.csv
+	fogy.tar.gz
+	geckodriver.log
+	github_keys.tar.gz
+	github_rsa_key_pair
+	github_rsa_key_pair.pub
+	github_stuff.png
+	gpats/
+	heatmaps/
+	new_fog-20190911T024731Z-001.zip
+	plotting.py
+	python3_setup_m93p.txt
+	requirements.txt
+	resources.txt
+	smb_install.txt
+	soi_data.txt
+	test_app.py
+	test_app_modules.py
+	test_app_plots.py
+	testapp_printable.py
+	thunderstorm_forecasting_KNN_2019_copy.ipynb
+	tools4data-mining2020_newSep2020.txt
+	utility_functions_sep2018.py
+	utility_functions_sep2018.py.bkp.py
+	utility_functions_sep2018_bkpApr2020.py
+	utility_functions_sep2018_new.py
+	utility_functions_sep2018_rfc_June26_2020.py
+	yourapplication.cgi
+	yourapplication.wsgi
+
+nothing added to commit but untracked files present (use "git add" to track)
+[bou@bous-fed31 avguide]$ git remote -v
+origin	git@github.com:launda/avguide.git (fetch)
+origin	git@github.com:launda/avguide.git (push)
+[bou@bous-fed31 avguide]$ # Show the associated remote repositories and their stored name, like origin
+[bou@bous-fed31 avguide]$ git remote -v
+origin	git@github.com:launda/avguide.git (fetch)
+origin	git@github.com:launda/avguide.git (push)
+[bou@bous-fed31 avguide]$ git push
+fatal: The current branch master has no upstream branch.
+To push the current branch and set the remote as upstream, use
+
+    git push --set-upstream origin master
+
+[bou@bous-fed31 avguide]$ git push origin master
+To github.com:launda/avguide.git
+ ! [rejected]        master -> master (non-fast-forward)
+error: failed to push some refs to 'git@github.com:launda/avguide.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[bou@bous-fed31 avguide]$ # https://www.git-tower.com/learn/git/faq/git-pull-origin-master/
+[bou@bous-fed31 avguide]$ git pull origin master
+Warning: Permanently added the RSA host key for IP address '13.236.229.21' to the list of known hosts.
+From github.com:launda/avguide
+ * branch            master     -> FETCH_HEAD
+error: The following untracked working tree files would be overwritten by merge:
+	extract_gpats_adamprd_2020.py
+	fog_study.ipynb
+	requirements.txt
+	tools4data-mining2020_newSep2020.txt
+	utility_functions_sep2018.py
+Please move or remove them before you merge.
+[bou@bous-fed31 avguide]$ git add requirements.txt tools4data-mining2020_newSep2020.txt utility_functions_sep2018.py
+[bou@bous-fed31 avguide]$ git commit -m "Add following untracked working tree files to remote"
+[master fed504c] Add following untracked working tree files to remote
+ 5 files changed, 314670 insertions(+)
+ create mode 100644 extract_gpats_adamprd_2020.py
+ create mode 100644 fog_study.ipynb
+ create mode 100644 requirements.txt
+ create mode 100644 tools4data-mining2020_newSep2020.txt
+ create mode 100755 utility_functions_sep2018.py
+[bou@bous-fed31 avguide]$ git push origin master
+To github.com:launda/avguide.git
+ ! [rejected]        master -> master (non-fast-forward)
+error: failed to push some refs to 'git@github.com:launda/avguide.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[bou@bous-fed31 avguide]$ git pull origin master
+From github.com:launda/avguide
+ * branch            master     -> FETCH_HEAD
+CONFLICT (add/add): Merge conflict in utility_functions_sep2018.py
+Auto-merging utility_functions_sep2018.py
+Automatic merge failed; fix conflicts and then commit the result.
+[bou@bous-fed31 avguide]$ git pull origin master
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+[bou@bous-fed31 avguide]$ git add  utility_functions_sep2018.py
+[bou@bous-fed31 avguide]$ git commit -m "Add utility module"
+[master 93dbc52] Add utility module
+[bou@bous-fed31 avguide]$ git push origin master
+To github.com:launda/avguide.git
+ ! [rejected]        master -> master (fetch first)
+error: failed to push some refs to 'git@github.com:launda/avguide.git'
+hint: Updates were rejected because the remote contains work that you do
+hint: not have locally. This is usually caused by another repository pushing
+hint: to the same ref. You may want to first integrate the remote changes
+hint: (e.g., 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[bou@bous-fed31 avguide]$ git pull origin master
+remote: Enumerating objects: 3, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 2 (delta 1), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (2/2), 603 bytes | 603.00 KiB/s, done.
+From github.com:launda/avguide
+ * branch            master     -> FETCH_HEAD
+   52aff03..d86e027  master     -> origin/master
+CONFLICT (modify/delete): utility_functions_sep2018.py deleted in d86e027058a7b908aee0d2164b3e1e119c5c1112 and modified in HEAD. Version HEAD of utility_functions_sep2018.py left in tree.
+Automatic merge failed; fix conflicts and then commit the result.
+[bou@bous-fed31 avguide]$ 
+
+
+
