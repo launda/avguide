@@ -1739,28 +1739,52 @@ def results_TS_station(station):
         preci = preci.iloc[0]
     # print("Preci for {}: {}".format(station,preci))
     preci_fcst = preci['preci'] + " Chance of any rain = "+ preci['pop']
-    
+
     print("Processing TS stats for station {}".format(station))
 
-    sonde_data = pickle.load(
-            open(os.path.join(cur_dir,'data', 'sonde_hank_final.pkl'), 'rb'))
+    #sonde_data = pickle.load(
+    #        open(os.path.join(cur_dir,'data', 'sonde_hank_final.pkl'), 'rb'))
+
+    if station in ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY']:
+        sonde_data = pickle.load( open(
+            os.path.join('app','data','YBBN_sonde_2300_aws.pkl'), 'rb'))
+            #os.path.join('app','data','sonde_hank_final.pkl'), 'rb'))
+    elif station in ['YBRK','YGLA','YTNG','YBUD','YHBA','YMYB','YEML','YCMT','YMRB','YBMK','YBPN','YBHM']:
+        # load Rockhampton sonde data file
+        sonde_data = pickle.load( open(
+            os.path.join('app','data','YBRK_sonde_2300_aws.pkl'), 'rb'))
+    elif station in ['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL']:
+        sonde_data = pickle.load( open(
+            os.path.join('app','data','YSSY_sonde_0300_aws.pkl'), 'rb'))
+        # print("\n\n\n\nBEGIN PROCESSING TS FORECASTS FOR SYDNEY BASIN\n",sonde_data.tail())
+    '''
+    We are matching storms based on 2300Z data, 2300Z data is actually data for following calendar day
+    but we would be matching be METAR day which staarts 00Z
+    so we need to reindex the donde data so we merge METAR 00Z data with correct sonde data
+    No such problems using sonde data after 2300Z - as in SYd case
+    '''
+    if station not in ['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL']:
+        sonde_data.set_index(
+            keys=(sonde_data.index.date - pd.Timedelta(str(1) + ' days')),
+            drop=False,inplace=bool(1))
+        # we loose datetime type of index in conversion above - restore BLW
+        sonde_data.index = pd.to_datetime(sonde_data.index)
 
     df = pickle.load(
         open(
             os.path.join(cur_dir, 'data', station + '_aws.pkl'), 'rb'))
     #print("/n/nGetting TS prediction for station: aws data is:")
-    #print(df.tail(1))
+    print(df.tail(1))
     #print("/nIndex of df:",df.index)
     #print("/n/nResample df:", \
     #    (df.resample('D')['AvID', 'WDir', 'WS','T', 'Td', 'QNH', 'any_ts', 'AMP'].first()).tail())
     print("/n/n00Z data only from df:", \
         df.between_time('00:00', '00:45').head()[['AvID', 'WDir', 'WS','T', 'Td', 'QNH', 'any_ts', 'AMP']])
     # merge with closest radiosonde upper data archive
-    print("/nSonde data is:")
-    print(sonde_data.tail(1))
+    print("/nSonde data is:",sonde_data.tail(1))
     print("/nIndex of sonde data",sonde_data.index)
     '''
-      File "./app/__init__.py", line 1605, in storm_predict
+    File "./app/__init__.py", line 1605, in storm_predict
     storm_predictions = bous.get_ts_predictions_stations(stations,sonde_data)
     File "./utility_functions_sep2018.py", line 3047, in get_ts_predictions_stations
     left = df.resample('D')[['AvID','Td','QNH','any_ts','AMP']].first(),
@@ -1769,9 +1793,10 @@ def results_TS_station(station):
     aws_sonde_daily = pd.merge(
         #left = df.resample('D')[['AvID','Td','QNH','any_ts','AMP']].first(),
         left = df.between_time('00:00', '00:45')[['AvID','Td','QNH','any_ts']].resample('D').first(),
-        right=sonde_data[['wdir500','wspd500','T500', 'tmp_rate850_500']],
+        right=sonde_data[['500_wdir','500_WS','T500', 'tmp_rate850_500']], #KeyError: "['500_WS', '500_wdir'] not in index"
+        #right=sonde_data[['wdir500','wspd500','T500', 'tmp_rate850_500']],
         left_index=True, right_index=True,how='left')\
-        .rename(columns={'QNH': 'P','any_ts':'TS'})
+        .rename(columns={'QNH': 'P','any_ts':'TS','500_wdir':'wdir500','500_WS':'wspd500'})
 
     ''' get date input from main 'thunderstorm_predict.html' '''
 

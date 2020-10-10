@@ -1044,12 +1044,22 @@ def closest_level(dat):
 #####################################################
 ## WARNING : IF U CHANGE f160 FOLDER - FEW THINGS BREAK!!!
 
-def batch_process_F160_hanks():
+def batch_process_F160_hanks(station:str='YBBN',time:str='0500'):
+    """[Read daily sonde data .txt files from a manually specified folder
+    and assemble data for main standard levels and some derived quantities
+    like 85 to 500 lapse rates, CAPE, LI, TOTA, DLM Steering etc]
+
+    Args:
+        station (str, optional): [F160 Radio-sonde station - 4 chars wide]. Defaults to 'YBBN'.
+        time (str, optional): [Sonde release time]. Defaults to '0500'.
+    """
     import os
     from glob import glob
-    cur_dir = "/home/bou/Downloads/"   # ONLY FOR STANDALONE CALLS
-    print("f160 data dir = ", cur_dir+'f160_23z/')
-    filenames = glob(cur_dir + 'f160_23z/stn*txt')
+    import pickle
+
+    cur_dir = "/home/bou/Downloads/f160s/"   # ONLY FOR STANDALONE CALLS
+    print("f160 data dir = ", cur_dir+station+'_f160_'+time+'/')
+    filenames = glob(cur_dir+station+'_f160_'+time+'/stn*txt')
     print(len(filenames), filenames[-5:])
     dataframes = []
     f_dates=[]
@@ -1070,8 +1080,8 @@ def batch_process_F160_hanks():
                 # NB IF U CHANGE f160 FOLDER - CAN'T GET DATES!!!
                 # cur_dir = '/home/accounts/vinorda/sr-ask-11966/data/' split(7)!!
 
-                print(f.split('/')[5].split('.')[0][10:])
-                f_dates.append(f.split('/')[5].split('.')[0][10:])
+                print(f.split('/')[6].split('.')[0][10:])
+                f_dates.append(f.split('/')[6].split('.')[0][10:])
                 dat = pd.read_csv(f, skiprows=10, skip_blank_lines=True)
 
                 # drop these 2 cols - have no actual data
@@ -1093,7 +1103,7 @@ def batch_process_F160_hanks():
         except OSError as e:
             # File does not exists or is non accessible
             print("What da ..Empty file {}".format(f))
-        else:
+        finally:
             print("Processing file {}".format(f))
 
     # concat/join all daily data into 1 big file
@@ -1133,14 +1143,29 @@ def batch_process_F160_hanks():
                 .reset_index(level=0,drop=True).sort_index()
     sfc_500_sonde = pd.concat([sfc_proxy, p_levels], axis=1) '''
     # sfc_500_sonde.to_csv(cur_dir+'f160/sonde_data_hanks_2000to2018_june10.csv')
-    sfc_500_sonde.to_csv(cur_dir+'f160_23z/YBBN_sonde23z_2000to2020.csv')
+    col_names=['sfc_P','sfc_T','sfc_Td','sfc_wdir','sfc_wspd',
+    'P910','T910','Td910','900_wdir','900_WS',
+    'P850','T850','Td850','850_wdir','850_WS',
+    'P700','T700','Td700','700_wdir','700_WS',
+    'P500','T500','Td500','500_wdir','500_WS']
+    sfc_500_sonde.columns = col_names  #rename col names
+    sfc_500_sonde['tmp_rate850_500'] = sfc_500_sonde['T850']-sfc_500_sonde['T500'] # get lapse rates
 
+    #cur_dir = '/home/bou/shared/stats-R/flask_projects/avguide'
+    #with open(
+    #    os.path.join(cur_dir,'app','data',station+'_sonde_'+time+'_aws.pkl') , 'wb') as f:
+    #    pickle.dump(df, f)
+    with open(
+        os.path.join(cur_dir+station+'_sonde_'+time+'_aws.pkl') , 'wb') as f:
+        pickle.dump(sfc_500_sonde, f)
+
+    # sfc_500_sonde.to_csv(cur_dir+'f160_0300/YSSY_sonde03z_2000to2020.csv')
     return(sfc_500_sonde)
 
 
-def get_sounding_data(station:str='YBBN',time:str='23',level:str=None)->pd.DataFrame:
+def get_sounding_data(station:str='YBBN',time:str='2300',level:str=None)->pd.DataFrame:
     """
-    [Grab sounding data for station]
+    [Grab sounding data for station - obseleted #############]
     Args:
         station (str, optional): [description]. Defaults to 'YBBN'.
         level (str, optional): [description]. Defaults to None.
@@ -1148,7 +1173,7 @@ def get_sounding_data(station:str='YBBN',time:str='23',level:str=None)->pd.DataF
         pd.DataFrame: [description]
     """
     # cur_dir = '/home/bou/Downloads/'
-    # cur_dir = '/home/bou/shared/stats-R/flask_projects/avguide/app/data'
+    cur_dir = '/home/bou/shared/stats-R/flask_projects/avguide/app/data'
     # cur_dir = "/home/accounts/qdisplay/avguide/app/data"
     col_names=['sfc_P','sfc_T','sfc_Td','sfc_wdir','sfc_wspd',
     'P910','T910','Td910','900_wdir','900_WS',
@@ -1166,9 +1191,14 @@ def get_sounding_data(station:str='YBBN',time:str='23',level:str=None)->pd.DataF
         names=col_names,
         skiprows=1,
         header=None)
+
+    sonde = pickle.load(
+            open(os.path.join(cur_dir,'app','data',station+'_sonde_'+time+'_aws.pkl'), 'rb'))
+    '''
     # for 17 and 23Z use the UTC date of sonde flight as index
     if time:
-        if int(time) in [17,23]:
+        if int(time) in [14,15,16,17,18,19,20,21,22,23]:
+
             sonde.set_index(
                 keys=(sonde.index.date),drop=False,inplace=bool(1))
         else: # int(time) == 0:
@@ -1178,7 +1208,34 @@ def get_sounding_data(station:str='YBBN',time:str='23',level:str=None)->pd.DataF
     # we loose datetime type of index in conversion above - restore BLW
     sonde.index = pd.to_datetime(sonde.index)
 
+    file stn066037_2006-7-1.txt
+    aifstime[18]="200607011900"  <-- 1900UTC on 1st July
+    For FG matching we would be using mostly using either 02, 05, 06, 08 or 11UTC obs
+    and sonde from following day (although same UTC day) so when matching we
+    get all 0500 UTC obs for station and merge with 1900 or 2300 sonde data - for SAME UTC date
+    we could even merge the 05Z METARs with 05Z sonde and use that for synoptic matching as well
+    so no problem with fog synop matching.
+
+    For TS matching if we are using 23Z sonde data and 0200Z or 0500Z METARs
+    then we need to correct the index for sonde data i.e 2300 UTC sonde date from Nov 1st
+    is actually 9am Nov 2nd - the day we need to match for METARs is Nov 2nd and we need to
+    change sonde index from Nov 1st to Nov 2nd so that correct sonde data is used for matching.
+    We probably need to do same for fog matching if we want to use current days 9am obs together
+    with current days 3pm/0500 or 6pm/0800 METARS
+    Given this usage depends on context - fog/ or TS matching and whether we want to use observed
+    sonde 2300 or 0500 vs forecast 2300Z/0500Z sonde for matching 
+    So we leave this reindexing out of the code here.
+
+    file stn066037_2010-11-1.txt
+    aifstime[18]="201011010300"  <-- 0300UTC on 1st Nov
+    Why do we want to say this data is for 31st Oct by subtracting 1day BELOW?????
+    This will stuff up storm day matching at obs wud be from Nov 1st and wrong day sonde!!
+
+
+    sonde['tmp_rate850_500'] = sonde['T850']-sonde['T500']
     # if only request data at level, return only that level , else return full sonde
+    '''
+    # this filtering could be easily implemented in client
     if level:
         return sonde[[level+'_wdir', level+'_WS']].astype(float, 'ignore')
     else:
@@ -2981,13 +3038,33 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
     if set(stations).intersection(set(['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY'])):
         # load Brisbane sonde data file
         sonde_data = pickle.load( open(
-            os.path.join('app','data','sonde_hank_final.pkl'), 'rb'))
+            os.path.join('app','data','YBBN_sonde_2300_aws.pkl'), 'rb'))
+            #os.path.join('app','data','sonde_hank_final.pkl'), 'rb'))
+        #sonde_data = get_sounding_data('YBBN','2300')
         print("BEGIN PROCESSING TS FORECASTS FOR SEQ STATIONS\n",sonde_data.tail())
     elif set(stations).intersection(set(['YBRK','YGLA','YTNG','YBUD','YHBA','YMYB','YEML','YCMT','YMRB','YBMK','YBPN','YBHM'])):
         # load Rockhampton sonde data file
         sonde_data = pickle.load( open(
-        os.path.join('app','data','sonde_hank_YBRK.pkl'), 'rb'))
+            os.path.join('app','data','YBRK_sonde_2300_aws.pkl'), 'rb'))
+        #sonde_data = get_sounding_data('YBRK','2300')
         print("BEGIN PROCESSING TS FORECASTS FOR CAPRICORN/CENTRAL HIGHLANDN COAST\n",sonde_data.tail())
+    elif set(stations).intersection(set(['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL'])):
+        sonde_data = pickle.load( open(
+            os.path.join('app','data','YSSY_sonde_0300_aws.pkl'), 'rb'))
+        print("\n\n\n\nBEGIN PROCESSING TS FORECASTS FOR SYDNEY BASIN\n",sonde_data.tail())
+
+    '''
+    We are matching storms based on 2300Z data, 2300Z data is actually data for following calendar day
+    but we would be matching be METAR day which staarts 00Z
+    so we need to reindex the donde data so we merge METAR 00Z data with correct sonde data
+    No such problems using sonde data after 2300Z - as in SYd case
+    '''
+    if set(stations).intersection(set(['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY'])):
+        sonde_data.set_index(
+            keys=(sonde_data.index.date - pd.Timedelta(str(1) + ' days')),
+            drop=False,inplace=bool(1))
+            # we loose datetime type of index in conversion above - restore BLW
+        sonde_data.index = pd.to_datetime(sonde_data.index)
 
     # If date supplied - get TS predictions for that day
     # operationally - we wud always want predictions for today so my_date=''
@@ -3041,7 +3118,7 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
         df  = pickle.load(
                 open(
                 os.path.join('app','data', station+'_aws.pkl'), 'rb'))
-        #print(df.tail(1))
+        print(df.tail(1))
         print(df.index)
         print(df.columns)
         print(df.info)
@@ -3062,9 +3139,10 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
         aws_sonde_daily = pd.merge(
         #left = df.resample('D')[['AvID','Td','QNH','any_ts','AMP']].first(),
         left = df.between_time('00:00', '00:45')[['AvID','Td','QNH','any_ts']].resample('D').first(),
-        right=sonde_data[['wdir500','wspd500','T500', 'tmp_rate850_500']],
+        right=sonde_data[['500_wdir','500_WS','T500', 'tmp_rate850_500']], #KeyError: "['500_WS', '500_wdir'] not in index"
+        #right=sonde_data[['wdir500','wspd500','T500', 'tmp_rate850_500']],
         left_index=True, right_index=True,how='left')\
-        .rename(columns={'QNH': 'P','any_ts':'TS'})
+        .rename(columns={'QNH': 'P','any_ts':'TS','500_wdir':'wdir500','500_WS':'wspd500'})
 
         obs_4day = None
 
