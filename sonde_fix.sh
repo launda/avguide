@@ -3,9 +3,9 @@
 
 << 'MULTILINE-COMMENT'
 
-When we download sonde data for Sydney
-data is for either 0200 or 0300 or 0500 sonde flights
-how do we merge this data files so we keep only data for that has full sonde info
+Sydney sounding is not at regular times unlike YBBN which has regular sondes everyday at 2300 and 0500UTC. For Sydney the sonding releases can be 0200 or 0300 or 0500 and for the morning ones can be 1700, 1900, 2300 etc.
+When we download sonde data using Hanks interface, we can specify 
+how do we merge these data files so we keep only data for that has full sonde info
 for e.g if 0300 sonde is bigger file then we keep the 0300 for same date and remore/delete the 0200 file
 for same date.
 
