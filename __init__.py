@@ -229,7 +229,7 @@ def list_routes():
 	return jsonify({"routes": result, "total": len(result)})
 
 
-# root '/' and index both both to our home page 
+# root '/' and index both both to our home page
 @app.route('/', methods=["GET"])
 @app.route('/index/', methods=["GET"])
 @app.route('/aussy_airports/', methods=["GET"])
@@ -475,7 +475,7 @@ def plot_obs_time_series(sta):
     print("Calling plot_obs_time_series() to plot T and TD time series with {}".format(sta))
 
     from io import BytesIO
-    # from flask import send_file 
+    # from flask import send_file
     # send_file throws "<built-in function uwsgi_sendfile> returned a result with an error set"
     # use Response instead
     from flask import Response
@@ -579,7 +579,7 @@ def plot_obs_time_series(sta):
             # PLOT TEMPERATURE AND DEWPOINT
             if not plot_range:
                 plot_range = [np.min(td)-1, np.max(t)+1, 2]
-            self.ax2 = fig.add_subplot(4, 1, 2, sharex=self.ax1)  #(4,1,2) - 4 rows, 1 col, tis is 2nd plot 
+            self.ax2 = fig.add_subplot(4, 1, 2, sharex=self.ax1)  #(4,1,2) - 4 rows, 1 col, tis is 2nd plot
             ln4 = self.ax2.plot(self.dates, t, 'r-', label='Temperature')
             self.ax2.fill_between(self.dates, t, td, color='r',alpha=0.1) # DONT FILL
 
@@ -596,11 +596,11 @@ def plot_obs_time_series(sta):
             lns = ln4 + ln5
             labs = [l.get_label() for l in lns]
             ax_twin.xaxis.set_major_formatter(mpl.dates.DateFormatter('%d/%H UTC'))
-             
+
             self.ax2.legend(lns, labs, loc='upper center',
                             bbox_to_anchor=(0.5, 1.2), ncol=2, prop={'size': 12})
 
-        
+
         def plot_rh(self, rh, plot_range=None):
             """
             Required input:
@@ -647,7 +647,7 @@ def plot_obs_time_series(sta):
             self.ax4.legend(loc='upper center', bbox_to_anchor=(0.5, 1.2), prop={'size': 12})
             self.ax4.grid(b=True, which='major', axis='y', color='k', linestyle='--',
                           linewidth=0.5)
-    
+
     '''  No point as we create and display plots on the fly - no need to save to disk
     try:
         #os.remove(os.path.join(cur_dir, 'static/images/plots', 'TimeSeries_{}.png'.format(sta)))
@@ -655,7 +655,7 @@ def plot_obs_time_series(sta):
     except OSError:
         pass
     '''
-    
+
     data = bous.get_wx_obs_www([sta], hist='Yes')
     data['wdir'] = data['wdir'].apply(f)   # convert directions text like SSE to decimal
     # data.sort_index(axis=0, ascending=True, inplace=True)
@@ -667,17 +667,17 @@ def plot_obs_time_series(sta):
     meteogram.plot_rh(data['RH'])
     meteogram.plot_pressure(data['P'])
     fig.subplots_adjust(hspace=0.4)
-    
+
     # Using nginx as uWSGI server means assets like static etc same level as app folder
     # fig.savefig(os.path.join(cur_dir, 'static/images/plots', 'TimeSeries_{}.png'.format(sta)))
     # fig.savefig(os.path.join('static/images/plots', 'TimeSeries_{}.png'.format(sta)))
     # flask can serve plot to web without having to save it to disk
-    
+
     # print( "Current directory from plot_obs_time_series is", cur_dir, " and pwd is ", os.getcwd())
     print( "Current directory from get_avlocs() in utility_fucntions_sept2018 is", os.getcwd())
 
     img = BytesIO()
-    fig.savefig(img)    
+    fig.savefig(img)
     img.seek(0)
     w = FileWrapper(img)
     #return send_file(img, mimetype='image/png')
@@ -715,7 +715,7 @@ def tafors():
 
     import requests
     from bs4 import BeautifulSoup
-   
+
     query_parameters = request.args
     sta = query_parameters.get('taf_id')
     area = query_parameters.get('area')
@@ -723,7 +723,7 @@ def tafors():
     cntry = query_parameters.get('cntry')
 
     '''http://ourairports.com/countries/AU/VIC/airports.html
-    open calc - copy "ident" col to txt file find replace \n with ','   '''    
+    open calc - copy "ident" col to txt file find replace \n with ','   '''
 
     fijian_tafs = ['NFFN','NFNA','NFNS','NFNL','NFMA','NFNM','NFCS','NFRS','NFNB','NFCI','NFNO','NFNK','NFFO','NFMO',
     'NFNG','NFNR','NFVB','NFKD','NFKB','NFNH','NFOL','NFNV','NFVL','NFNW','NFSW','NFFA','NFNU','NTA','NFUL','NFFR','NFBG']
@@ -777,7 +777,7 @@ def tafors():
     		return ("<h1>Sorry to dissappoint. This beta version TAF API only for Aust and Fiji!</h1>")
     else:
     	return ("<h1>Error: No valid parameters provided. Check TAF API and try again.</h1>")
-    
+
     ''' OLD CODE
     #we pass in both strings such as states like 'VIC', 'nsw', 'fj', 'au'
     #also area (an integer) such as 40, 80, 20 etc [Ensure its string b4 strip !!]
@@ -832,18 +832,18 @@ def tafors():
 def plot_td(sta):
 
     from datetime import datetime, timedelta
-    
+
     from io import BytesIO
-    # from flask import send_file 
+    # from flask import send_file
     # send_file throws "<built-in function uwsgi_sendfile> returned a result with an error set"
     # use Response instead
     from flask import Response
     # from werkzeug import FileWrapper
     # see https://www.pythonanywhere.com/forums/topic/13570/
-    from werkzeug.wsgi import FileWrapper    
+    from werkzeug.wsgi import FileWrapper
     import seaborn as sns
     import matplotlib.pyplot as plt
-    
+
     print("Calling plot_td with {}".format(sta))
     df = pickle.load(
         open(
@@ -954,7 +954,7 @@ def aero_intel():
     # '2015-05-15 05:22:17.953439'
     print ("time now is ",time_now)
     # prints time now is  <attribute 'hour' of 'datetime.datetime' objects>
-    
+
     time_now = datetime.utcnow().hour
 
     msg="<strong>Aerodrome Selection - type airport name  or Aviation ID - select match then Tab</strong>"
@@ -963,7 +963,7 @@ def aero_intel():
     area = 'area40'  # hard code to area 40 for now
     if isinstance(area, str):
         area = area.strip().upper()
-        
+
     '''At this stage we only serve time series and precis for qld
     locs only so need to check it location is in qld
     get aviation location info from pca and minimz database
@@ -986,13 +986,13 @@ def aero_intel():
         # abort(404) will never get here as return called b4
     # Page nt yet ready for sta outside QLD = Display MSG if no page found
     # Not Found : The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
-    
-    # get all ham/sam info for this airport - sta 
-    airports = avlocs.reset_index() # removes av_id as index 
+
+    # get all ham/sam info for this airport - sta
+    airports = avlocs.reset_index() # removes av_id as index
     airports = airports.to_dict(orient='records')
     airport = ''
     found = False
-    for row in airports:   # find record/row for given airport code 
+    for row in airports:   # find record/row for given airport code
         if row['LOC_ID'] == sta:
             airport = row
             found = True
@@ -1006,18 +1006,18 @@ def aero_intel():
     default = sta
 
     # find closest radar site for site by calculating dist from location to each of the radar sites
-    radars = {}  # store radar_url:dist pairs 
+    radars = {}  # store radar_url:dist pairs
     for radar in bous.radarCoords:
         # print(radar)
-        radars[radar['url']]= bous.haversine( airport['Lat'], airport['Long'],radar['lat'], radar['long']) 
+        radars[radar['url']]= bous.haversine( airport['Lat'], airport['Long'],radar['lat'], radar['long'])
 
     # print(radars)
     myList = sorted(radars.items(), key=lambda x: x[1], reverse=False)
     closest_radar_dist = myList[0][1]
-    closest_radar_url = myList[0][0]   
+    closest_radar_url = myList[0][0]
 
-    # print(myList[0], closest_radar_dist,closest_radar_url )    
-      
+    # print(myList[0], closest_radar_dist,closest_radar_url )
+
     print("Calling intel/{}".format(sta))
 
     ob = bous.get_wx_obs_www([sta], hist='Yes')  # this wud fail for non-QLD/NT and northern WA sta
@@ -1063,7 +1063,7 @@ def aero_intel():
     username = 'bomw0004'
     password = 'defCL1M8TE'
 
-    # catch connection errors timeouts 
+    # catch connection errors timeouts
     # see https://opensource.com/article/17/3/python-flask-exceptions
     try:
         taf = requests.get(url, auth=(username, password)).content
@@ -1259,7 +1259,7 @@ def plot_preci(state,df):
     df.set_index(keys='day', inplace=True)  
     '''
     cur_dir = '/home/accounts/vinorda/IT_stuff/python/flask_projects/storm_predictv2'
-    
+
     start_date = df.index[0]
     for days_out in list(range(8)):
         end_date = (start_date + pd.Timedelta(str(days_out)+'days'))\
@@ -1269,7 +1269,7 @@ def plot_preci(state,df):
         data = df.loc[end_date, ['lat','lon','T_max']].values
         lat,lon,t_max = data[:,0],data[:,1],data[:,2]
 
-    
+
         fig,ax = plt.subplots(figsize=(12,10))
 
         m = Basemap(projection='merc',llcrnrlat=-35,urcrnrlat=-8,\
@@ -1345,10 +1345,10 @@ def web_cams():
         	station_name = 'COOLANGATTA'
         if station_name == 'AYERS ROCK (YULARA)':
         	station_name = 'YULARA AIRPORT'
-       
+
         # check if successfuly extract sta name from form parameters
         if station_name:
-            for id_, name in web_cams.items():   
+            for id_, name in web_cams.items():
                 if station_name in name:
                     st_id = id_
                     print("Found webcams name:", name, "st_id:", st_id)
@@ -1530,7 +1530,7 @@ def storm_predict():
         with open(os.path.join(cur_dir,'templates', 'observations.html'), 'w') as ob:
             observations.to_html(ob,bold_rows=True,
                         border=4, col_space=10,justify='right',escape=False)
-        '''    
+        '''
     else:
         # we don't have any sonde data yet, try loading from adams 1st
         # if that fails throw the sonde_update to user
@@ -1650,7 +1650,7 @@ def results_TS_station(station):
     '''
     24hr trends in parameters such as MSLP,T,Td
     and skill of these derived parameters as predictor variables
-    imagine falling pressures and rising T wud correlate 
+    imagine falling pressures and rising T wud correlate
     highly with TS days and rising MSLP and falling Td with drier SE flow
 
     # adding single quotes around a string - just use repr()
@@ -1677,14 +1677,14 @@ def results_TS_station(station):
         # List of tuples  --> [('press', '1019.6'), ('dewpt', '9.8')]
         for key, value in request.form.items():
             print("key: {0}, value: {1}".format(key, value))
-    
+
         print("Pressure",   request.form["press"], list(request.form.items())[0][1])
         print("Dew Pt Temp",request.form["dewpt"], list(request.form.items())[1][1])
 
     # How to include form value in url_for function from jinja template
-    # https://stackoverflow.com/questions/46509404/how-can-i-include-form-value-in-url-for-function-from-jinja-template    
+    # https://stackoverflow.com/questions/46509404/how-can-i-include-form-value-in-url-for-function-from-jinja-template
     # https://stackoverflow.com/questions/49130767/how-to-render-a-wtf-form-in-flask-from-a-template-that-is-included-in-another-te
-    
+
     # if there is no sonde data - can't do TS predictions !!!
     if 'sonde_item' in session:
         # sonde_station = session.get('sonde_item')['sonde_station']
@@ -1707,7 +1707,7 @@ def results_TS_station(station):
             # logger.debug("Todays sonde flight:", sonde2day)
             sonde_from_adams = True
             sonde2day = sonde
-            print("Sonde flight from adams ", sonde_from_adams, " Sonde status ", sonde_from_adams == True)           
+            print("Sonde flight from adams ", sonde_from_adams, " Sonde status ", sonde_from_adams == True)
         except:
             # so if we can't get sonde from adams, ask user for manual input
             '''
@@ -1810,9 +1810,9 @@ def results_TS_station(station):
         # If no date supplied - get prediction for TODAY
         day = pd.datetime.today()
         print("def get_ts_predictions_stations:\nNo date supplied-will try predictions for today", day)
-        
-        ## seems pointless to do this again - when we already gone thru earlier 
-        # but believe me without this we can get individual station prodictions from 
+
+        ## seems pointless to do this again - when we already gone thru earlier
+        # but believe me without this we can get individual station prodictions from
         # aero_intel page !!!! go figure why thats the case
         try:
             # try adam 1st - will always fail on www
@@ -1840,8 +1840,8 @@ def results_TS_station(station):
                 # get sonde data 1st
                 flash("No sonde data - please enter 1st")
                 return redirect(url_for('sonde_update'))
-        
-    # grab data for matching 
+
+    # grab data for matching
     if my_date:
         # If date supplied - get prediction for that day
         day = pd.to_datetime(my_date)  # my_date is string like '2018-02-13'
@@ -2108,7 +2108,7 @@ def results_FOG_station(station):
             print("Sonde flight from adams ", sonde_from_adams, " Sonde status ", sonde_from_adams == True)
         except:
             # so if we can't get sonde from adams, ask user for manual input
-            
+
             try:
                 sonde2day = pd.Series(session.get('sonde_item'))
                 print("Having trouble getting radionsonde for", day,
@@ -2173,10 +2173,16 @@ def results_FOG_station(station):
     I know this is about 5 hours after fog onset - expect little change in upper winds in that time
     Best use 5Z sounding for 06Z data, and 11Z sonding for 12Z data.
     '''
-    #snd = pickle.load(
-    #    open(
-    #    os.path.join(cur_dir, 'data', 'sonde_hank_final.pkl'), 'rb'))
-    snd = bous.get_sounding_data(station='YBBN',time='23')
+    if station in ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY']:
+        snd = pickle.load(
+            open(
+            os.path.join(cur_dir, 'data', 'YBBN_sonde_2300_aws.pkl'), 'rb'))
+    elif station in ['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL']:
+        snd = pickle.load(
+            open(
+                os.path.join(cur_dir, 'data', 'YSSY_sonde_2300_aws.pkl'), 'rb'))
+
+    # snd = bous.get_sounding_data(station='YBBN',time='23')
     # set the UTC date as index - so its same utc day as fog event
     # df_winds.set_index(df_winds.index - pd.Timedelta(str(1) + ' days'),inplace=bool(1))
     snd['lr_sfc_850'] = snd['sfc_T'] - snd['T850']

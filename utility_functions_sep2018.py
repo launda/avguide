@@ -421,8 +421,8 @@ def process_climate_zone_csv_2020(station:str='YBBN'):
     '''
 
     #cur_dir="/home/bou/shared/stats-R/fog-project/tcz_data/HM01X_99999999_9852610"
-    #cur_dir = "/home/accounts/qdisplay/avguide/app/data"
-    cur_dir='/home/bou/shared/stats-R/flask_projects/avguide/app/data'
+    cur_dir = "/home/accounts/qdisplay/avguide/tmp/"
+    #cur_dir='/home/bou/shared/stats-R/flask_projects/avguide/app/data'
     '''In the app,  cur_dir will come from environment config'''
     # data_file = f'HM01X_Data_{tcz_file_map[station]}.txt'
     data_file = os.path.join(cur_dir, f'HM01X_Data_{station}.txt')
@@ -632,7 +632,7 @@ def get_storm_dates(gpats:pd.DataFrame,df:pd.DataFrame):
     AWS (Automatic Weather Station) flag
     0 Manned    1 Automatic     2 Hybrid '''
     # if (df.iloc[-1]['AWS_Flag'] == 2): #tis wud not alwys work!!
-    hybrid_sta_list = ['YBBN','YAMB','YBOK','YTBL','YBCS','YSSY','YBCS','YPDN','YBTL']
+    hybrid_sta_list = ['YBBN','YAMB','YBOK','YBRK','YTBL','YBCS','YSSY','YWLM','YPDN','YPTN','YBTL','YPCC','YPXM']
     if sta in hybrid_sta_list:
         # build dict key:val, where key is wx-codes and value is wx-desc
         pw = {91: 'TS', 92: 'TS', 93: 'TS', 94: 'TS', 95: 'TS', \
@@ -755,8 +755,8 @@ input: sta - aviation id of station e.g 'YBBN'
 
 def merge_aws_gpats_data(sta):
 
-    #cur_dir = "/home/accounts/qdisplay/avguide/app/data/gpats"
-    cur_dir='/home/bou/shared/stats-R/flask_projects/avguide/app/data/'
+    cur_dir = "/home/accounts/qdisplay/avguide/tmp/"
+    #cur_dir='/home/bou/shared/stats-R/flask_projects/avguide/app/data/'
     '''In the app,  cur_dir will come from environment config
     gpats fil ename like       --> gpats_YPXM_10NM.csv
     tcz climate zone data file --> HM01X_Data_YPXM.txt'''
@@ -906,6 +906,8 @@ def batch_download_F160_hanks(station:str="040842",start_date='None',end_date='N
         start_date = pd.datetime.today().strftime("%Y-%m-%d")
         end_date = start_date
 
+
+    cur_dir = "/home/accounts/vinorda/Downloads/"
     f160_url = 'http://aifs-sa.bom.gov.au/cgi-bin/extract_skewt_from_adam.pl'
     #dates = pd.date_range(start='2000-Feb-01', end='2018-Feb-13', freq='D')
     dates = pd.date_range(start=start_date, end=end_date, freq='D')
@@ -1086,7 +1088,7 @@ def batch_process_F160_hanks(station:str='YBBN',time:str='0500'):
     from glob import glob
     import pickle
 
-    cur_dir = "/home/bou/Downloads/f160s/"   # ONLY FOR STANDALONE CALLS
+    cur_dir = "/home/accounts/vinorda/Downloads/"   # ONLY FOR STANDALONE CALLS
     print("f160 data dir = ", cur_dir+station+'_f160_'+time+'/')
     filenames = glob(cur_dir+station+'_f160_'+time+'/stn*txt')
     print(len(filenames), filenames[-5:])
@@ -3633,12 +3635,21 @@ def get_fg_predictions_stations_new(stations,sonde2day=None,my_date=None):
     # you can emplicityl test empty set using if len(myset)  <-- cardinality of the set
     if set(stations).intersection(set(['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY'])):
         # load Brisbane sonde data file
-        snd = get_sounding_data(station='YBBN',time='23')
-        print("BEGIN PROCESSING FG FORECASTS FOR SEQ STATIONS\n",snd.tail())
+        sonde_data = pickle.load( open(
+            os.path.join('app','data','YBBN_sonde_2300_aws.pkl'), 'rb'))
+            #os.path.join('app','data','sonde_hank_final.pkl'), 'rb'))
+        #sonde_data = get_sounding_data('YBBN','2300')
+        print("BEGIN PROCESSING TS FORECASTS FOR SEQ STATIONS\n",sonde_data.tail())
     elif set(stations).intersection(set(['YBRK','YGLA','YTNG','YBUD','YHBA','YMYB','YEML','YCMT','YMRB','YBMK','YBPN','YBHM'])):
         # load Rockhampton sonde data file
-        snd = get_sounding_data(station='YBRK',time='23')
-        print("BEGIN PROCESSING FG FORECASTS FOR CAPRICORN/CENTRAL HIGHLANDS COAST\n",snd.tail())
+        sonde_data = pickle.load( open(
+            os.path.join('app','data','YBRK_sonde_2300_aws.pkl'), 'rb'))
+        #sonde_data = get_sounding_data('YBRK','2300')
+        print("BEGIN PROCESSING TS FORECASTS FOR CAPRICORN/CENTRAL HIGHLANDN COAST\n",sonde_data.tail())
+    elif set(stations).intersection(set(['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL'])):
+        sonde_data = pickle.load( open(
+            os.path.join('app','data','YSSY_sonde_0300_aws.pkl'), 'rb'))
+        print("\n\n\n\nBEGIN PROCESSING TS FORECASTS FOR SYDNEY BASIN\n",sonde_data.tail())
 
     # sonde_data = sonde_data.loc[:,['900_wdir', '900_WS','lr_sfc_850']].rename(columns={'900_wdir':'direction','900_WS':'speed'})
     snd['lr_sfc_850'] = snd['sfc_T']-snd['T850']
@@ -3809,13 +3820,20 @@ def get_fg_predictions_stations(stations,sonde2day=None,my_date=None):
     if set(stations).intersection(set(['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY'])):
         # load Brisbane sonde data file
         sonde_data = pickle.load( open(
-            os.path.join('app','data','sonde_hank_final.pkl'), 'rb'))
+            os.path.join('app','data','YBBN_sonde_2300_aws.pkl'), 'rb'))
+            #os.path.join('app','data','sonde_hank_final.pkl'), 'rb'))
+        #sonde_data = get_sounding_data('YBBN','2300')
         print("BEGIN PROCESSING TS FORECASTS FOR SEQ STATIONS\n",sonde_data.tail())
     elif set(stations).intersection(set(['YBRK','YGLA','YTNG','YBUD','YHBA','YMYB','YEML','YCMT','YMRB','YBMK','YBPN','YBHM'])):
         # load Rockhampton sonde data file
         sonde_data = pickle.load( open(
-        os.path.join('app','data','sonde_hank_YBRK.pkl'), 'rb'))
-        print("BEGIN PROCESSING TS FORECASTS FOR CAPRICORN/CENTRAL HIGHLANDS COAST\n",sonde_data.tail())
+            os.path.join('app','data','YBRK_sonde_2300_aws.pkl'), 'rb'))
+        #sonde_data = get_sounding_data('YBRK','2300')
+        print("BEGIN PROCESSING TS FORECASTS FOR CAPRICORN/CENTRAL HIGHLANDN COAST\n",sonde_data.tail())
+    elif set(stations).intersection(set(['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL'])):
+        sonde_data = pickle.load( open(
+            os.path.join('app','data','YSSY_sonde_0300_aws.pkl'), 'rb'))
+        print("\n\n\n\nBEGIN PROCESSING TS FORECASTS FOR SYDNEY BASIN\n",sonde_data.tail())
 
     # The UTC date for sonde data is actually one less than the calendar data
     sonde_data.set_index(sonde_data.index - pd.Timedelta(str(1) + ' days'),inplace=bool(1))
