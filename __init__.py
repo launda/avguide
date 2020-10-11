@@ -1503,6 +1503,8 @@ def storm_predict():
         elif sonde_station == 'YBCV':
             stations = ['YBCV', 'YROM', 'YSGE', 'YTGM', 'YWDH', 'YLLE', 'YBDV']
             area = 'Southern Central and Southwest QLD'
+        elif sonde_station == 'YSSY':
+            stations = ['YSSY', 'YSBK', 'YSHW', 'YSCN', 'YSHL', 'YSRI', 'YWLM']
 
         '''
         # load default set observations for display on main index page
@@ -1591,6 +1593,8 @@ def storm_predict():
             elif sonde_station == 'YBCV':
                 stations = ['YBCV', 'YROM', 'YSGE', 'YTGM', 'YWDH', 'YLLE', 'YBDV']
                 area = 'Southern Central and Southwest QLD'
+            elif sonde_station == 'YSSY':
+                stations = ['YSSY', 'YSBK', 'YSHW', 'YSCN', 'YSHL', 'YSRI', 'YWLM']
 
             # prepare urls
             av_to_pred = {}

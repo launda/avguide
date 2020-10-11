@@ -28,13 +28,13 @@ class Sonde_updateForm(FlaskForm):
 
    st_name = RadioField('Sonde station',
                         choices = [('YBBN','Brisbane'),('YBCV','Charleville'),
-                                ('YBRK','Rockhampton')],
+                                ('YBRK','Rockhampton'), ('YSSY','Sydney')],
                     validators=[DataRequired("Not valid choice of stations")],
                     default = 'YBBN')
 
    sonde_time = SelectField('Sonde Time',
-                        choices = [('05Z', '3PM Afternoon Sonde'),
-                                   ('23Z', '9AM Mid Morning Sonde')],
+                        choices = [('23Z', 'Morning Sonde:   3am, 4am, 5am upto 9am'),
+                                   ('05Z', 'Afternoon Sonde: 1pm, 2pm ,3pm etc')],
                     validators=[DataRequired("Not valid choice of sounding times")],
                     default = '23Z')
 
