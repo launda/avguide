@@ -541,35 +541,55 @@ with open('~/data/Brisbane_aws_Jan1985-Jan2018.pkl', 'wb') as f:
 ############ READ  GPATS DATA FILE #################
 ####################################################
 '''
+>>> cur_dir='/home/bou/shared/stats-R/flask_projects/avguide/app/data/'
+>>> g = bous.get_gpats_data(cur_dir,'YSSY')
+Reading YSSY gpats file /home/bou/shared/stats-R/flask_projects/avguide/gpats/YSSY_10NM.csv
+>>> g.tail()
+                      LATITUDE   LONGITUDE  AMP
+TM                                             
+2020-09-25 11:50:00 -27.549110  153.173250    1
+2020-09-25 11:57:00 -27.529860  153.190630    1
+2020-09-25 12:20:00 -27.305605  153.025925    2
+
+
 # gpats datetime stamps have miscrosecond precisions
    2008-03-28 04:37:06.546000
    YYYY-MM-DD HH:MM:SS.uuuuuu
 # This is NOT COMPATIBLE WITH AWS DATA datetime stamps
-# which has HH:MM:SS resolution, mostly HH:MM
+# which has HH:MM resolution
 # so we drop it right after read.csv()
 # NB We could have also resampled to seconds
 '''
-def get_gpats_data(cur_dir:str="",sta:str=""):
 
-    # gpats_file = f'gpats_{sta}_10NM.csv'
-    # file = os.path.join(cur_dir,'app','data',data_file)
+def get_gpats_data(cur_dir:str="./gpats_data/",sta:str="YBBN")->pd.DataFrame:
+    """[summary]
+    Args:
+        cur_dir (str, optional): [FOlder that stores gpat data]. Defaults to "./gpats_data/".
+        sta (str, optional): [Aviation location]. Defaults to "YBBN".
+    Returns:
+        pd.DataFrame: [description]
+    """
+    # join is smart so cur_dir can be like ./gpats  or ./gpats/
     gpats_file = os.path.join(cur_dir, f'gpats_{sta}_10NM.csv')
     print("Reading {} gpats file {}".format(sta, gpats_file))
 
-    gpats = pd.read_csv(gpats_file,
-                 parse_dates=True, index_col='TM')
+    gpats = pd.read_csv(gpats_file,parse_dates=True, index_col='TM').\
+            resample('1min').\
+            agg(dict(LATITUDE='mean', LONGITUDE='mean', AMP='count')).\
+            dropna()
+    ''' PREVIOUS VER of CODE
+    gpats = pd.read_csv(gpats_file,parse_dates=True, index_col='TM')
+    has HH:MM:SS resolution, mostly HH:MM so we trim it
+    We have non-standard datetime, use pd.to_datetime after pd.read_csv
+    apply custom string format to drops higher precision microseconds'''
+    # gpats_new_index = gpats.index.strftime('%Y:%m:%d %H:%M:%S')
+    '''
+    convert string/object dateime back to datetime type
+    and use that as new index for gpats df'''
+    # gpats.index = pd.to_datetime(gpats_new_index,
+    #                             format='%Y:%m:%d %H:%M:%S',
+    #                             errors='coerce')
 
-    # Non-standard datetime
-    # use pd.to_datetime after pd.read_csv
-    # apply custom string format to datetime,
-    # this ignore/drops higher precision microseconds
-    gpats_new_index = gpats.index.strftime('%Y:%m:%d %H:%M:%S')
-
-    # convert string series of dateime like objects
-    # back to datetime index and set as new index
-    gpats.index = pd.to_datetime(gpats_new_index,
-                                 format='%Y:%m:%d %H:%M:%S',
-                                 errors='coerce')
     return (gpats)
 
 
@@ -580,7 +600,16 @@ def get_gpats_data(cur_dir:str="",sta:str=""):
           - gpats file for aws station
     out  - list of days we had storms at station    '''
 
-def get_storm_dates(gpats,df):
+def get_storm_dates(gpats:pd.DataFrame,df:pd.DataFrame):
+    """[summary]
+
+    Args:
+        gpats (pd.DataFrame): [description]
+        df (pd.DataFrame): [description]
+
+    Returns:
+        [pd.Datetime]: [List of dates when we had storms at station]
+    """
 
     #storm_dates = []
     storm_dates_pw = []
@@ -669,7 +698,7 @@ def get_storm_dates(gpats,df):
 ########## TS START/END/DURATION FM GPATS###########
 ####################################################
 
-def get_gpats_start_end_duration(gpat):
+def get_gpats_start_end_duration(gpat:pd.DataFrame)->pd.DataFrame:
 
     import numpy as np
 
@@ -727,14 +756,14 @@ input: sta - aviation id of station e.g 'YBBN'
 def merge_aws_gpats_data(sta):
 
     #cur_dir = "/home/accounts/qdisplay/avguide/app/data/gpats"
-    cur_dir='/home/bou/shared/stats-R/flask_projects/avguide/app/data'
+    cur_dir='/home/bou/shared/stats-R/flask_projects/avguide/app/data/'
     '''In the app,  cur_dir will come from environment config
     gpats fil ename like       --> gpats_YPXM_10NM.csv
     tcz climate zone data file --> HM01X_Data_YPXM.txt'''
     # gpats_file = f'gpats_{sta}_10NM.csv'
     # file = os.path.join(cur_dir,'app','data',data_file)
     gpats_file = os.path.join(cur_dir, f'gpats_{sta}_10NM.csv')
-    tcz_file = os.path.join(cur_dir, f'HM01X_Data_{sta}.txt')
+    tcz_file =   os.path.join(cur_dir, f'HM01X_Data_{sta}.txt')
 
     print(f'\nProcessing sta={sta},\nClimate Zone data file:{tcz_file}",\
         \nGpats file: {gpats_file}')
