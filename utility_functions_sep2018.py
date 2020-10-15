@@ -1569,7 +1569,7 @@ def getf160_adams(station_number=40842, start_date='None',end_date='None'):
     "WHERE STN_NUM={station_number}"
     "AND TM between TO_DATE('{start_date}', 'yyyy-mm-dd')"
     "AND TO_DATE('{end_date}', 'yyyy-mm-dd') + 1 "
-    "AND TO_CHAR(tm,'hh24') in (22,23,00)"
+    "AND TO_CHAR(tm,'hh24') in (22,23,00,01,02,03)"
     # "AND TO_CHAR(tm,'hh24') = '23' " <-- Don't
     # "AND pres IN (910,850,700,500)"
     # "AND pres is NOT NULL"   ERROR OR-00908 mising null keyword
@@ -3085,10 +3085,11 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
         print("\n\n\n\nBEGIN PROCESSING TS FORECASTS FOR SYDNEY BASIN\n",sonde_data.tail())
 
     '''
-    We are matching storms based on 2300Z data, 2300Z data is actually data for following calendar day
-    but we would be matching be METAR day which staarts 00Z
-    so we need to reindex the donde data so we merge METAR 00Z data with correct sonde data
-    No such problems using sonde data after 2300Z - as in SYd case
+    We are matching storms based on 2300Z sonde data
+    2300Z sonde data is actually data for following/next calendar day
+    so we need to reindex the sonde data so we merge METAR 00Z data with correct days sonde data
+    No such problems using sonde data after 2300Z - as in SYd case when sonde is 02 or 03Z
+    as then METAR day 00Z and Sonde day both fall on the same date/day
     '''
     if set(stations).intersection(set(['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY'])):
         sonde_data.set_index(
@@ -3149,10 +3150,10 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
         df  = pickle.load(
                 open(
                 os.path.join('app','data', station+'_aws.pkl'), 'rb'))
-        print(df.tail(1))
+        print(df[['AvID', 'WDir', 'WS', 'T', 'Td', 'QNH', 'any_ts', 'AMP']].tail(5))
         print(df.index)
         print(df.columns)
-        print(df.info)
+        #prin t(df.info)
         # merge with closest radiosonde upper data archive
         '''
         File "./app/__init__.py", line 1605, in storm_predict
@@ -3167,13 +3168,34 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
         and likely 00Z as well
         df.loc['2000-01-01':'2000-01-05'].between_time('00:00','00:30').resample('D').first()
         '''
+        '''
+        df_temp = None
+        if utc == 0:
+            df_temp = df.between_time('23:45', '00:15').resample('D').first()
+            print("Matching using 10am data\n", df[['T', 'Td', 'QNH']].between_time('23:45', '00:15').tail(5))
+        if utc == 2:
+            df_temp = df.between_time('01:45', '02:15').resample('D').first()
+            print("Matching using 12pm data\n", df[['T', 'Td', 'QNH']].between_time('01:45', '02:15').tail(5))
+        if utc == 4:
+            df_temp = df.between_time('03:45', '04:15').resample('D').first()
+            print("Matching using 2pm data\n", df[['T', 'Td', 'QNH']].between_time('03:45', '04:15').tail(5))
+        df_temp = df_temp.loc[:df.index.date[-1]]  # resample introduces days for rest of days in year!!
+        # df_temp['fogflag'] = df_temp['fogflag'].astype(bool)  # force to be boolean converts NaN to False
+        # Now this would work to filter fog days only ==>  df_temp[df_temp['fogflag']]
+        '''
+        # when we process all stations at once - assume match sought for 02Z/12pm 0bs
+        # we may in future put a input for time n main page
+        df_temp = df.between_time('01:45', '02:15').resample('D').first()
         aws_sonde_daily = pd.merge(
-        #left = df.resample('D')[['AvID','Td','QNH','any_ts','AMP']].first(),
-        left = df.between_time('00:00', '00:45')[['AvID','Td','QNH','any_ts']].resample('D').first(),
-        right=sonde_data[['500_wdir','500_WS','T500', 'tmp_rate850_500']], #KeyError: "['500_WS', '500_wdir'] not in index"
-        #right=sonde_data[['wdir500','wspd500','T500', 'tmp_rate850_500']],
-        left_index=True, right_index=True,how='left')\
-        .rename(columns={'QNH': 'P','any_ts':'TS','500_wdir':'wdir500','500_WS':'wspd500'})
+            # left = df.resample('D')[['AvID','Td','QNH','any_ts','AMP']].first(),
+            left=df_temp[['AvID', 'WDir', 'WS', 'T', 'Td', 'QNH', 'any_ts', 'AMP']],
+            right=sonde_data[['500_wdir', '500_WS', 'T500', 'tmp_rate850_500']],
+            # KeyError: "['500_WS', '500_wdir'] not in index"
+            # right=sonde_data[['wdir500','wspd500','T500', 'tmp_rate850_500']],
+            left_index=True, right_index=True, how='left') \
+            .rename(columns={'QNH': 'P', 'any_ts': 'TS', '500_wdir': 'wdir500', '500_WS': 'wspd500'})
+        print("/nMerged Sonde/AWS data is:\n", aws_sonde_daily.tail(5))
+        ''' get date input from main 'thunderstorm_predict.html' '''
 
         obs_4day = None
 
@@ -3692,7 +3714,7 @@ def get_fg_predictions_stations_new(stations,sonde2day=None,my_date=None):
             # right=df_winds[['Station', 'level','900_wdir','900_WS']],\  #if using EC data file
             left_index=True, right_index=True, how='left')
 
-        print("\n", aws_sonde_daily.tail(2))
+        print("\n", aws_sonde_daily.tail(5))
 
         obs_4day = data_18Z.loc[station].copy()  # get station 1800/4am data
         print(obs_4day)
@@ -3880,7 +3902,7 @@ def get_fg_predictions_stations(stations,sonde2day=None,my_date=None):
             # right=df_winds[['Station', 'level','900_wdir','900_WS']],\  #if using EC data file
             left_index=True, right_index=True, how='left')
 
-        print("\n", aws_sonde_daily.tail(2))
+        print("\n", aws_sonde_daily.tail(5))
 
         obs_4day = data_18Z.loc[station].copy()  # get station 1800/4am data
 
@@ -4513,6 +4535,8 @@ def get_wx_obs_www(stations, hist=''):
         # df_10am.drop_duplicates(subset='Name', keep='first',inplace=True)
 
     df_10am.columns = ['av_id', 'P', 'T', 'Td', 'wdir', 'wspd', 'gust', 'RH', 'vis']
+    print ("Fetched {} observations".format(airport))
+    print(df_10am.tail())
 
     return (df_10am.sort_index(axis=0))
 

@@ -1519,7 +1519,7 @@ def storm_predict():
             stations = ['YBCV', 'YROM', 'YSGE', 'YTGM', 'YWDH', 'YLLE', 'YBDV']
             area = 'Southern Central and Southwest QLD'
         elif sonde_station == 'YSSY':
-            stations = ['YSSY', 'YSBK', 'YSHW', 'YSCN', 'YSHL', 'YSRI', 'YWLM']
+            stations = ['YSSY', 'YSBK',  'YSCN', 'YSHL', 'YSRI', 'YWLM'] #'YSHW',
 
         '''
         # load default set observations for display on main index page
@@ -1549,10 +1549,16 @@ def storm_predict():
                         border=4, col_space=10,justify='right',escape=False)
         '''
     else:
-        # we don't have any sonde data yet, try loading from adams 1st
-        # if that fails throw the sonde_update to user
+
+        print("We don't have todays sounding data yet yet, try loading from adams 1st,\n\
+              if that fails throw the sonde_update form to user to enter manually!")
         try:
             sonde = bous.getf160_adams(40842) # 08180906,start_date='2018-08-07',end_date='2018-08-08')
+            #if station in ['YSSY', 'YSRI', 'YWLM', 'YSBK', 'YSCN', 'YSHW', 'YSHL']:
+            #    sonde = bou.getf160_adams(66037)
+            #if station in ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY']:
+            #    sonde = bous.getf160_adams(40842)
+
             sonde = sonde.resample('D').apply(bous.get_std_levels_adams)
             # sonde = getf160_hanks("040842") # dont need to do std levels for hanks
             # hanks works but runs into except clause!!!
@@ -1590,6 +1596,8 @@ def storm_predict():
             print("Having trouble getting radionsonde for",\
             day, "ENTER SONDE DATA MANUALLY on FORM")
             # FORCE USER TO ENTER SONDE DATA !!!!!!!!!!!!
+            flash("ENTER SOUNDING DATA FROM LOCATION CLOSEST TO YOUR AIRPORT\n\
+                   TO GET FORECAST FOR ANOTHER AREA, 1ST ENTER SELECT/ENTER CORRECT SOUNDING DATA")
             return redirect(url_for('sonde_update'))   # remark on python anywhere.com only
 
     if (request.method == "POST") & ('get_storm_preds' in request.form):
@@ -1609,7 +1617,7 @@ def storm_predict():
                 stations = ['YBCV', 'YROM', 'YSGE', 'YTGM', 'YWDH', 'YLLE', 'YBDV']
                 area = 'Southern Central and Southwest QLD'
             elif sonde_station == 'YSSY':
-                stations = ['YSSY', 'YSBK', 'YSHW', 'YSCN', 'YSHL', 'YSRI', 'YWLM']
+                stations = ['YSSY', 'YSBK', 'YSCN', 'YSHL', 'YSRI', 'YWLM'] #'YSHW',
 
             # prepare urls
             av_to_pred = {}
@@ -1680,6 +1688,7 @@ def results_TS_station(station):
     from datetime import datetime
     cur_hour = datetime.utcnow().hour
     my_date = None
+    utc = None
     station = station.upper()
 
 
@@ -1716,16 +1725,19 @@ def results_TS_station(station):
             print(f'$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\
                 Session has {which_station} sonde. We can make predictions for these stations:{stations}')
         elif which_station == 'YSSY':
-            stations = ['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL']
+            stations = ['YSSY','YSRI','YWLM','YSBK','YSCN','YSHL'] #'YSHW',
             print(f'$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\
                 Session has {which_station} sonde. We can make predictions for these stations:{stations}')
-
         sonde2day = pd.Series(session.get('sonde_item'))
     else:
         # get sonde data 1st
         try:
             # try adams database first
-            sonde = getf160_adams(40842)
+            if station in ['YSSY', 'YSRI', 'YWLM', 'YSBK', 'YSCN', 'YSHW', 'YSHL']:
+                sonde = getf160_adams(66037)
+            if station in ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY']:
+                sonde = getf160_adams(40842)
+
             sonde = sonde.resample('D').apply(get_std_levels_adams)
             # sonde = getf160_hanks("040842") # dont need to do std levels for hanks
             # hanks works but runs into except clause!!!
@@ -1801,19 +1813,23 @@ def results_TS_station(station):
         # we loose datetime type of index in conversion above - restore BLW
         sonde_data.index = pd.to_datetime(sonde_data.index)
 
+    obs_4day = None
+
+    # load aws data
     df = pickle.load(
         open(
             os.path.join(cur_dir, 'data', station + '_aws.pkl'), 'rb'))
-    #print("/n/nGetting TS prediction for station: aws data is:")
-    print(df.tail(1))
+
+    print("\n\nGetting TS prediction for station: aws data is:")
+    #print(df[['AvID', 'WDir', 'WS','T', 'Td', 'QNH', 'any_ts', 'AMP']].tail(5))
     #print("/nIndex of df:",df.index)
     #print("/n/nResample df:", \
     #    (df.resample('D')['AvID', 'WDir', 'WS','T', 'Td', 'QNH', 'any_ts', 'AMP'].first()).tail())
-    print("/n/n00Z data only from df:", \
-        df.between_time('00:00', '00:45').head()[['AvID', 'WDir', 'WS','T', 'Td', 'QNH', 'any_ts', 'AMP']])
+    print("\n\n00Z data from station:\n", \
+       df.between_time('00:00', '00:45')[['AvID', 'WDir', 'WS','T', 'Td', 'QNH', 'any_ts', 'AMP']].tail())
     # merge with closest radiosonde upper data archive
-    print("/nSonde data is:",sonde_data.tail(1))
-    print("/nIndex of sonde data",sonde_data.index)
+    print("\nSonde data is:\n",sonde_data.tail(1))
+    print("\nIndex of sonde data\n",sonde_data.index)
     '''
     File "./app/__init__.py", line 1605, in storm_predict
     storm_predictions = bous.get_ts_predictions_stations(stations,sonde_data)
@@ -1821,17 +1837,8 @@ def results_TS_station(station):
     left = df.resample('D')[['AvID','Td','QNH','any_ts','AMP']].first(),
     ValueError: cannot reindex from a duplicate axis
     '''
-    aws_sonde_daily = pd.merge(
-        #left = df.resample('D')[['AvID','Td','QNH','any_ts','AMP']].first(),
-        left = df.between_time('00:00', '00:45')[['AvID','Td','QNH','any_ts']].resample('D').first(),
-        right=sonde_data[['500_wdir','500_WS','T500', 'tmp_rate850_500']], #KeyError: "['500_WS', '500_wdir'] not in index"
-        #right=sonde_data[['wdir500','wspd500','T500', 'tmp_rate850_500']],
-        left_index=True, right_index=True,how='left')\
-        .rename(columns={'QNH': 'P','any_ts':'TS','500_wdir':'wdir500','500_WS':'wspd500'})
 
-    ''' get date input from main 'thunderstorm_predict.html' '''
 
-    obs_4day = None
 
     # If date supplied - get TS predictions for that day
     # operationally - we wud always want predictions for today so my_date=''
@@ -1840,14 +1847,22 @@ def results_TS_station(station):
     else:
         # If no date supplied - get prediction for TODAY
         day = pd.datetime.today()
-        print("def get_ts_predictions_stations:\nNo date supplied-will try predictions for today", day)
+        print("def get_ts_predictions_stations:No date supplied-will try predictions for today", day)
 
         ## seems pointless to do this again - when we already gone thru earlier
         # but believe me without this we can get individual station prodictions from
         # aero_intel page !!!! go figure why thats the case
         try:
             # try adam 1st - will always fail on www
-            sonde = getf160_adams(40842)
+            if station in ['YSSY', 'YSRI', 'YWLM', 'YSBK', 'YSCN', 'YSHW', 'YSHL']:
+                print("Looks like we want TS predictions for airport in Sydney Basin\n\
+                      Get Sydnye SOnde")
+                sonde = getf160_adams(66037)
+            if station in ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY']:
+                print("Looks like we want TS predictions for airport in Brisbane Valley\n\
+                      Get Brisbane SOnde")
+                sonde = getf160_adams(40842)
+
             sonde = sonde.resample('D').apply(get_std_levels_adams)
             # sonde = getf160_hanks("040842") # dont need to do std levels for hanks
             # hanks works but runs into except clause!!!
@@ -1864,9 +1879,9 @@ def results_TS_station(station):
                 # n finds it there now since we wud have gone sonde_update earlier
                 sonde2day = pd.Series(session.get('sonde_item'))
                 print("Having trouble getting radionsonde for",
-                  day, "will use manually entered sonde data ", sonde2day)
+                  day, "\nwill use manually entered sonde data ", sonde2day)
                 sonde_from_adams = False
-                print("Sonde status from adams", sonde_from_adams == True)
+                print("Could not grab sonde data from adams database", sonde_from_adams == True)
             except:
                 # get sonde data 1st
                 flash("No sonde data - please enter 1st")
@@ -1877,6 +1892,17 @@ def results_TS_station(station):
         # If date supplied - get prediction for that day
         day = pd.to_datetime(my_date)  # my_date is string like '2018-02-13'
         # get obs from station/sonde merged data for this date
+        if utc is None: # batch process assumes we want to match again 02Z/12pm obs
+            print("Matching using 12pm data when no Time specified\n", \
+                  df[['T', 'Td', 'QNH']].between_time('01:45', '02:15').tail(5))
+
+        aws_sonde_daily = pd.merge(
+            # left = df.resample('D')[['AvID','Td','QNH','any_ts','AMP']].first(),
+            left=df.between_time('01:45', '02:15').resample('D').first()\
+                [['AvID', 'WDir', 'WS', 'T', 'Td', 'QNH', 'any_ts', 'AMP']],
+            right=sonde_data[['500_wdir', '500_WS', 'T500', 'tmp_rate850_500']],
+            left_index=True, right_index=True, how='left') \
+            .rename(columns={'QNH': 'P', 'any_ts': 'TS', '500_wdir': 'wdir500', '500_WS': 'wspd500'})
         obs_4day = aws_sonde_daily.loc[my_date]  # .T.squeeze()
         print("Observations for given date {} is \n{}" \
               .format(day.strftime("%Y-%m-%d"), obs_4day))
@@ -1897,15 +1923,24 @@ def results_TS_station(station):
             print ("Current hour is ", cur_hour)
 
             if ((cur_hour >= 0) & ( cur_hour < 12)):
-                print("Past 00Z - so station obs for QNH and Td at 00Z should be available now")
+                print("Past 00Z and before midnight - so station obs for QNH and Td at 00Z should be available now")
                 try:
+                    print("\nGetting observartions for station:{}".format(station))
                     wx_obs = bous.get_wx_obs_www([station]).squeeze()  # expects a list
                     print("\nObservations for 00Z on {} for {} :\n{}"\
                         .format(day.strftime("%Y-%m-%d"), station, wx_obs.to_frame()))
                     # extra work if call like this
                     # wx_obs = get_wx_obs_www(stations)
                     # sta_ob = wx_obs[wx_obs['name'].str.contains(station)]
-
+                    '''
+                    We try and read form data only when confirmed that form data was posted
+                    '''
+                    if request.method =='POST':
+                        print(list(request.form.items()))
+                        utc = float(list(request.form.items())[0][1])
+                        print("\n\nSynop Matching time is", utc)
+                    else:
+                        print("No form data posted here - so use default synop matching time")
                     # update surface parameters from station aws data
                     obs_4day['P'] = wx_obs['P']
                     obs_4day['T'] = wx_obs['T']
@@ -1919,8 +1954,12 @@ def results_TS_station(station):
                     please enter forecast estimates for stations QNH and Td at 00Z")
                 # press, td = input("Enter station pressure and dew point separated by comma:").strip().split(",")
                 print("obs_4day B4 manual enter 00Z P,Td", obs_4day)
-                obs_4day['P'] =  float(list(request.form.items())[0][1])  #float(press)
-                obs_4day['Td'] = float(list(request.form.items())[1][1])
+                #try:
+                if request.method == 'POST':
+                    obs_4day['P'] =  float(list(request.form.items())[0][1])  #float(press)
+                    obs_4day['Td'] = float(list(request.form.items())[1][1])
+                else:
+                    print("No P and Td data entered - no form data to read!")
                 print("\nobs_4day after manual enter 00Z P,Td\n",obs_4day)
 
 
@@ -1945,6 +1984,41 @@ def results_TS_station(station):
                 \nTry predict TS using last obs in database".format(station))
             # obs_4day = aws_sonde_daily.loc[aws_sonde_daily.iloc[-1].index]
             # continue
+
+
+    # df_temp = df.loc[df.index.hour == 18]  # filter out 18Z obs from stations AWS obs data b4 merging in
+    # df_temp = df.loc[np.logical_and(df.index.hour == 6, df.index.minute == 0)]
+    # df_temp = df_temp.resample('D').first()  # gets only one 06XX UTC obs from each day
+    # note the above keeps 'fogflag' as bool but introduces some NaN which can make filtering paninful
+    df_temp=None
+    if utc is None:  # if no form data to confirm which sysnoptc hour to match against - deafult to midday obs
+        df_temp = df.between_time('01:45', '02:15').resample('D').first()
+        print("Matching using 12pm data when no Time specified\n",\
+              df[['T', 'Td', 'QNH']].between_time('01:45', '02:15').tail(5))
+    else:
+        if utc==0:
+            df_temp = df.between_time('23:45', '00:15').resample('D').first()
+            print("Matching using 10am data\n",df[['T','Td','QNH']].between_time('23:45', '00:15').tail(5))
+        if utc==2:
+            df_temp = df.between_time('01:45', '02:15').resample('D').first()
+            print("Matching using 12pm data\n",df[['T','Td','QNH']].between_time('01:45', '02:15').tail(5))
+        if utc==4:
+            df_temp = df.between_time('03:45', '04:15').resample('D').first()
+            print("Matching using 2pm data\n",df[['T','Td','QNH']].between_time('03:45', '04:15').tail(5))
+
+    df_temp = df_temp.loc[:df.index.date[-1]]  # resample introduces days for rest of days in year!!
+    # df_temp['fogflag'] = df_temp['fogflag'].astype(bool)  # force to be boolean converts NaN to False
+    # Now this would work to filter fog days only ==>  df_temp[df_temp['fogflag']]
+
+    aws_sonde_daily = pd.merge(
+        #left = df.resample('D')[['AvID','Td','QNH','any_ts','AMP']].first(),
+        left = df_temp[['AvID', 'WDir', 'WS','T', 'Td', 'QNH', 'any_ts', 'AMP']],
+        right=sonde_data[['500_wdir','500_WS','T500', 'tmp_rate850_500']], #KeyError: "['500_WS', '500_wdir'] not in index"
+        #right=sonde_data[['wdir500','wspd500','T500', 'tmp_rate850_500']],
+        left_index=True, right_index=True,how='left')\
+        .rename(columns={'QNH': 'P','any_ts':'TS','500_wdir':'wdir500','500_WS':'wspd500'})
+    print("\nMerged Sonde/AWS data is:\n", aws_sonde_daily.tail(5))
+    ''' get date input from main 'thunderstorm_predict.html' '''
 
 
     if obs_4day[['wdir500','wspd500','T500', 'P','Td','tmp_rate850_500']].isnull().any():
@@ -2123,7 +2197,11 @@ def results_FOG_station(station):
         # get sonde data 1st
         try:
             # try adams database first
-            sonde = getf160_adams(40842)
+            if station in ['YSSY', 'YSRI', 'YWLM', 'YSBK', 'YSCN', 'YSHW', 'YSHL']:
+                sonde = getf160_adams(66037)
+            if station in ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY']:
+                sonde = getf160_adams(40842)
+
             sonde = sonde.resample('D').apply(get_std_levels_adams)
             # sonde = getf160_hanks("040842") # dont need to do std levels for hanks
             # hanks works but runs into except clause!!!
@@ -2242,7 +2320,10 @@ def results_FOG_station(station):
         # aero_intel page !!!! go figure why thats the case
         try:
             # try adam 1st - will always fail on www
-            sonde = getf160_adams(40842)
+            if station in ['YSSY', 'YSRI', 'YWLM', 'YSBK', 'YSCN', 'YSHW', 'YSHL']:
+                sonde = getf160_adams(066037)
+            if station in ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY']:
+                sonde = getf160_adams(40842))
             sonde = sonde.resample('D').apply(get_std_levels_adams)
             # sonde = getf160_hanks("040842") # dont need to do std levels for hanks
             # hanks works but runs into except clause!!!
@@ -2345,6 +2426,7 @@ def results_FOG_station(station):
     # df_temp = df_temp.resample('D').first()  # gets only one 06XX UTC obs from each day
     # note the above keeps 'fogflag' as bool but introduces some NaN which can make filtering paninful
     df_temp=None
+    print("utc for pattern matchig =",utc)
     if utc==5:
         df_temp = df.between_time('04:45', '05:15').resample('D').first()
         print("Matching using 3pm data\n",df[['T','Td','QNH']].between_time('04:45', '05:15').tail())

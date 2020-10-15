@@ -1,0 +1,13 @@
+<form action="{{ url_for('results_TS_station', station=airport.LOC_ID) }}" method="post">
+Synop Hour for matching:
+    <LABEL FOR="R1">10AM </LABEL>
+    <INPUT TYPE="Radio" Name="UTC" ID="R1" Value="0" checked>
+    &nbsp;&nbsp;<LABEL FOR="R2">12PM </LABEL>
+    <INPUT TYPE="Radio" Name="UTC" ID="R2" Value="2">
+    &nbsp;&nbsp;<LABEL FOR="R3">2PM </LABEL>
+    <INPUT TYPE="Radio" Name="UTC" ID="R3" Value="4"><br>
+
+Station Pressure:<input <input type="text" name="press" value="1018"><br>
+Dew Point Temp:<input <input type="text" name="dewpt" value="18"><br>
+<input type="submit" value="Predict TS">
+</form>
