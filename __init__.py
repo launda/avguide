@@ -339,9 +339,8 @@ def sonde_update():
         QNH = float(form.QNH.data)
 
         sonde_item = {'sonde_station': st_name, 'sonde_time': sonde_time,
-            't850': t850, 't500': t500,
-            'wdir900': wdir_900, 'wspd900': wspd_900,
-            'wdir500': wdir_500, 'wspd500': wspd_500,
+            'wdir900': wdir_900, 'wspd900': wspd_900,'t850': t850,
+            'wdir500': wdir_500, 'wspd500': wspd_500,'t500': t500,
             'tmp_rate850_500': tmp_rate850_500, 'P': QNH}
 
         # sonde_data = pd.Series(sonde_item)  # whats da point in doin tis?
@@ -413,6 +412,22 @@ On the other hand if validate_on_submit() returns False execution of statements
 inside the if body is skipped and form with validation errors is displayed
 '''
 
+
+'''
+https://hackersandslackers.com/managing-user-session-variables-with-flask-sessions-and-redis/
+
+https://pythonise.com/series/learning-flask/flask-session-object
+
+
+We want to use session object to store multiple sonde data 
+but thik its not eant for this
+
+Better use a global record variable with multiple sondings 
+say 02Z YSSY, 23Z YBBN , 19Z YSSY etc and when we wnt predictions than based on 
+what our station is list of stations we check the records and grad the corrext or relevant sounding
+data  to use.
+
+'''
 
 @app.route('/session/')
 def updating_session():
@@ -1690,9 +1705,21 @@ def results_TS_station(station):
     # https://stackoverflow.com/questions/49130767/how-to-render-a-wtf-form-in-flask-from-a-template-that-is-included-in-another-te
 
     # if there is no sonde data - can't do TS predictions !!!
+    # https://pythonise.com/series/learning-flask/flask-session-object
     if 'sonde_item' in session:
         # sonde_station = session.get('sonde_item')['sonde_station']
         # sonde_data from form in dict format - convert to pd Series
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n", session.get('sonde_item'))
+        which_station = session.get('sonde_item')['sonde_station']
+        if which_station == 'YBBN':
+            stations = ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB']
+            print(f'$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\
+                Session has {which_station} sonde. We can make predictions for these stations:{stations}')
+        elif which_station == 'YSSY':
+            stations = ['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL']
+            print(f'$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\
+                Session has {which_station} sonde. We can make predictions for these stations:{stations}')
+
         sonde2day = pd.Series(session.get('sonde_item'))
     else:
         # get sonde data 1st
@@ -2495,15 +2522,27 @@ def results_FOG_station(station):
 @app.route('/results_TS_seqld', methods=['POST'])
 def results_TS_seqld():
     if 'sonde_item' in session:
-        station = session.get('sonde_item')['sonde_station']
+        # sonde_station = session.get('sonde_item')['sonde_station']
         # sonde_data from form in dict format - convert to pd Series
-        # sonde_data = pd.Series(session.get('sonde_item'))
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n", session.get('sonde_item'))
+        which_station = session.get('sonde_item')['sonde_station']
+        if which_station == 'YBBN':
+            stations = ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB']
+            print(f'$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\
+                Session has {which_station} sonde. We can make predictions for these stations:{stations}')
+        elif which_station == 'YSSY':
+            stations = ['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL']
+            print(f'$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\
+                Session has {which_station} sonde. We can make predictions for these stations:{stations}')
     else:
         # get sonde data 1st
         return redirect(url_for('sonde_update'))
 
     #stations = ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB']
-    stations = ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB']
+    #if 'sonde_item' in session:
+    #    session['sonde_item']['sonde_station'] = 'YBBN'
+    #if station == 'YBBN'
+    # stations = ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB']
     #predictions = bous.get_ts_predictions_stations(stations,'2017-02-14')
     storm_predictions = bous.get_ts_predictions_stations(stations)
 
