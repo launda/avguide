@@ -3093,7 +3093,7 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
     '''
     if set(stations).intersection(set(['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY'])):
         sonde_data.set_index(
-            keys=(sonde_data.index.date - pd.Timedelta(str(1) + ' days')),
+            keys=(sonde_data.index.date + pd.Timedelta(str(1) + ' days')),
             drop=False,inplace=bool(1))
             # we loose datetime type of index in conversion above - restore BLW
         sonde_data.index = pd.to_datetime(sonde_data.index)
@@ -3133,9 +3133,9 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
             #logger.debug("Todays sonde flight:", sonde2day)
             sonde_from_adams = True
             sonde2day =  sonde
-            print("Sonde flight from adams ", sonde_from_adams, " Sonde status ", sonde_from_adams==True)
+            print("\n\nSonde flight from adams ", sonde_from_adams, " Sonde status ", sonde_from_adams==True)
         except:
-            print("Having trouble getting radionsonde for",\
+            print("\n\nHaving trouble getting radionsonde for",\
                 day, "PLEASE ENTER SONDE DATA MANUALLY ", sonde2day)
             # FORCE USER TO ENTER SONDE DATA !!!!!!!!!!!!
             return redirect(url_for('sonde_update'))
@@ -3151,9 +3151,9 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
                 open(
                 os.path.join('app','data', station+'_aws.pkl'), 'rb'))
         print(df[['AvID', 'WDir', 'WS', 'T', 'Td', 'QNH', 'any_ts', 'AMP']].tail(5))
-        print(df.index)
-        print(df.columns)
-        #prin t(df.info)
+        #print(df.index)
+        #print(df.columns)
+        #print(df.info)
         # merge with closest radiosonde upper data archive
         '''
         File "./app/__init__.py", line 1605, in storm_predict
@@ -3190,11 +3190,10 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
             # left = df.resample('D')[['AvID','Td','QNH','any_ts','AMP']].first(),
             left=df_temp[['AvID', 'WDir', 'WS', 'T', 'Td', 'QNH', 'any_ts', 'AMP']],
             right=sonde_data[['500_wdir', '500_WS', 'T500', 'tmp_rate850_500']],
-            # KeyError: "['500_WS', '500_wdir'] not in index"
-            # right=sonde_data[['wdir500','wspd500','T500', 'tmp_rate850_500']],
             left_index=True, right_index=True, how='left') \
             .rename(columns={'QNH': 'P', 'any_ts': 'TS', '500_wdir': 'wdir500', '500_WS': 'wspd500'})
-        print("/nMerged Sonde/AWS data is:\n", aws_sonde_daily.tail(5))
+        print("\n\nMerged Sonde/AWS data is:\n", \
+              aws_sonde_daily[['AvID', 'WDir', 'WS', 'T', 'Td', 'P','wdir500','wspd500']].tail(5))
         ''' get date input from main 'thunderstorm_predict.html' '''
 
         obs_4day = None
@@ -3204,7 +3203,7 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
             day = pd.to_datetime(my_date) #my_date is string like '2018-02-13'
             # get obs from station/sonde merged data for this date
             obs_4day = aws_sonde_daily.loc[my_date] #.T.squeeze()
-            print("Observations for given date {} is \n{}"\
+            print("\n\nObservations for given date {} is \n{}"\
                 .format(day.strftime("%Y-%m-%d"), obs_4day))
         else:
             #If no date supplied - get prediction for today
@@ -3218,7 +3217,7 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
                 NEED to get station surface parameters from station obs'''
 
                 wx_obs = get_wx_obs_www([station]).squeeze() #expects a list
-                print("\nObservations for 00Z on {} for {} :\n{}"\
+                print("\n\nObservations for 00Z on {} for {} :\n{}"\
                     .format(day.strftime("%Y-%m-%d"), station, wx_obs.to_frame()))
                 # extra work if call like this
                 # wx_obs = get_wx_obs_www(stations)
@@ -3234,21 +3233,21 @@ def get_ts_predictions_stations(stations,sonde2day=None,my_date=None):
 
                 # when sonde data manually entered - we set these manually
                 if sonde_from_adams==0 :
-                    print("Sonde flight from adams", sonde_from_adams)
+                    print("\n\nSonde flight from adams", sonde_from_adams)
                     obs_4day['T500'] = float(sonde2day['t500'])
                     obs_4day['wdir500'] = float(sonde2day['wdir500'])
                     obs_4day['wspd500'] = float(sonde2day['wspd500'])
                     obs_4day['tmp_rate850_500']  = \
                                     float(sonde2day['tmp_rate850_500'])
                 else:
-                    print("Sonde flight data from adams will be used", sonde_from_adams)
+                    print("\n\nSonde flight data from adams will be used", sonde_from_adams)
 
                 obs_4day['TS'] = None # we don't know if curr day had TS - silly!!
 
                 logger.debug("Observations for today {} :\n{}"\
                     .format(day.strftime("%Y-%m-%d"), obs_4day))
             except:
-                print("Results.html Having trouble getting station data for today\
+                print("\n\nResults.html Having trouble getting station data for today\
                     \nTry predict TS using last obs in database")
                 # obs_4day = aws_sonde_daily.loc[aws_sonde_daily.iloc[-1].index]
                 continue

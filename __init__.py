@@ -142,7 +142,7 @@ class Comment(db.Model):
 
 
 app.config['SECRET_KEY'] = 'a very bad password'
-app.permanent_session_lifetime = datetime.timedelta(days=1)#0.0005)
+app.permanent_session_lifetime = datetime.timedelta(days=0.1) #0.0005)   1 divide 24hrs X 2 = 0.02 days
 # don't set to 0 - then won't remember sonde data and predictions fail
 # with no obvious reasons why --- DONT MAKE
 
@@ -1692,22 +1692,31 @@ def results_TS_station(station):
     station = station.upper()
 
 
-    '''If we request TS calculations before 00Z, esp anytime between midnite and 10am
-    the aero_intel.html template will render a form to solicit QNH and Td 
-    data for that station 
+    '''If we request TS calculations anytime between midnite and 10am
+    the aero_intel.html template will render a form to solicit QNH and Td data for that station 
+    assuming the forecast sought is for the next day
+    
     Otherwise it will just read 00Z data from station observations
-
     access the form data via request.form that functions like a dictionary. 
     iterate over the form key, values with request.form.items()
     '''
-    if (cur_hour >= 14) & ( cur_hour <= 23.59): # just checking format of paramters from form
-        print(list(request.form.items()))
-        # List of tuples  --> [('press', '1019.6'), ('dewpt', '9.8')]
-        for key, value in request.form.items():
-            print("key: {0}, value: {1}".format(key, value))
+    if (cur_hour >= 14) & ( cur_hour <= 23.59):
+        if request.method == 'POST':
+            print(list(request.form.items()))
+            utc = float(list(request.form.items())[0][1])
+            print("\n\nSynop Matching time is", utc)
 
-        print("Pressure",   request.form["press"], list(request.form.items())[0][1])
-        print("Dew Pt Temp",request.form["dewpt"], list(request.form.items())[1][1])
+            # List of tuples  --> [('press', '1019.6'), ('dewpt', '9.8')]
+            for key, value in request.form.items():
+                print("key: {0}, value: {1}".format(key, value))
+
+            print("Pressure",   request.form["press"], list(request.form.items())[1][1])
+            print("Dew Pt Temp",request.form["dewpt"], list(request.form.items())[2][1])
+        else:
+            print("Past midnight AND No form data posted here - Can't do predictions for tomorrow!!!")
+    else:
+        if request.method != 'POST':
+            print("Not past midnight AND No form data posted here - USE default synop matching time 0200Z")
 
     # How to include form value in url_for function from jinja template
     # https://stackoverflow.com/questions/46509404/how-can-i-include-form-value-in-url-for-function-from-jinja-template
@@ -1722,17 +1731,17 @@ def results_TS_station(station):
         which_station = session.get('sonde_item')['sonde_station']
         if which_station == 'YBBN':
             stations = ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB']
-            print(f'$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\
-                Session has {which_station} sonde. We can make predictions for these stations:{stations}')
+            print(f'\n\n$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\
+            Session has {which_station} sonde. We can make predictions for these stations:{stations}')
         elif which_station == 'YSSY':
             stations = ['YSSY','YSRI','YWLM','YSBK','YSCN','YSHL'] #'YSHW',
-            print(f'$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\
-                Session has {which_station} sonde. We can make predictions for these stations:{stations}')
+            print(f'\nn\$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n\
+            Session has {which_station} sonde. We can make predictions for these stations:{stations}')
         sonde2day = pd.Series(session.get('sonde_item'))
     else:
         # get sonde data 1st
         try:
-            # try adams database first
+            print("\n\nTrying adams database first to get sonde data\n")
             if station in ['YSSY', 'YSRI', 'YWLM', 'YSBK', 'YSCN', 'YSHW', 'YSHL']:
                 sonde = getf160_adams(66037)
             if station in ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY']:
@@ -1746,11 +1755,11 @@ def results_TS_station(station):
             - adjust date (23Z issue!), drop extra STN_NUM columns
             - add day of year , season, drop duplicate rows for same date'''
             sonde = process_adams_sonde(sonde).squeeze()
-            print("Todays sonde flight for Brisbane:", sonde)
+            print("\n\nTodays sonde flight for Brisbane:", sonde)
             # logger.debug("Todays sonde flight:", sonde2day)
             sonde_from_adams = True
             sonde2day = sonde
-            print("Sonde flight from adams ", sonde_from_adams, " Sonde status ", sonde_from_adams == True)
+            print("\n\nSonde flight from adams ", sonde_from_adams, " Sonde status ", sonde_from_adams == True)
         except:
             # so if we can't get sonde from adams, ask user for manual input
             '''
@@ -1763,10 +1772,10 @@ def results_TS_station(station):
             except:
                 # get sonde data 1st
             '''
-            flash("No sonde data - please enter 1st")
+            flash("No sonde data or sonde can't get sonde from ADAMS - please enter BELOW")
             return redirect(url_for('sonde_update'))
 
-    print("Getting preci for {}".format(station))
+    print("\n\nGetting preci for {}".format(station))
     fcst = precis.loc[bous.avid_preci[station],]
     forecasts = fcst.to_html(bold_rows=True, border=4, col_space=10, justify='right', escape=False)
 
@@ -1802,19 +1811,18 @@ def results_TS_station(station):
         # print("\n\n\n\nBEGIN PROCESSING TS FORECASTS FOR SYDNEY BASIN\n",sonde_data.tail())
     '''
     We are matching storms based on 2300Z data, 2300Z data is actually data for following calendar day
-    but we would be matching be METAR day which staarts 00Z
-    so we need to reindex the donde data so we merge METAR 00Z data with correct sonde data
-    No such problems using sonde data after 2300Z - as in SYd case
+    but we would be matching be METAR day which starts 00Z
+    so we need to reindex the sonde data to ensure 00Z METAR data merged with correct days sonde data
+    No such problems using sonde data after 00Z - as in SYd case
     '''
-    if station not in ['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL']:
+    if station not in ['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL']: # so in Brissy land
         sonde_data.set_index(
-            keys=(sonde_data.index.date - pd.Timedelta(str(1) + ' days')),
+            keys=(sonde_data.index.date + pd.Timedelta(str(1) + ' days')),
             drop=False,inplace=bool(1))
         # we loose datetime type of index in conversion above - restore BLW
         sonde_data.index = pd.to_datetime(sonde_data.index)
 
-    obs_4day = None
-
+    obs_4day = None  # this is the parameters LIKE Td, QNH, 500 winds, temps etc
     # load aws data
     df = pickle.load(
         open(
@@ -1826,18 +1834,7 @@ def results_TS_station(station):
     #print("/n/nResample df:", \
     #    (df.resample('D')['AvID', 'WDir', 'WS','T', 'Td', 'QNH', 'any_ts', 'AMP'].first()).tail())
     print("\n\n00Z data from station:\n", \
-       df.between_time('00:00', '00:45')[['AvID', 'WDir', 'WS','T', 'Td', 'QNH', 'any_ts', 'AMP']].tail())
-    # merge with closest radiosonde upper data archive
-    print("\nSonde data is:\n",sonde_data.tail(1))
-    print("\nIndex of sonde data\n",sonde_data.index)
-    '''
-    File "./app/__init__.py", line 1605, in storm_predict
-    storm_predictions = bous.get_ts_predictions_stations(stations,sonde_data)
-    File "./utility_functions_sep2018.py", line 3047, in get_ts_predictions_stations
-    left = df.resample('D')[['AvID','Td','QNH','any_ts','AMP']].first(),
-    ValueError: cannot reindex from a duplicate axis
-    '''
-
+       df.between_time('23:45', '00:15')[['AvID', 'WDir', 'WS','T', 'Td', 'QNH', 'any_ts', 'AMP']].tail())
 
 
     # If date supplied - get TS predictions for that day
@@ -1847,19 +1844,33 @@ def results_TS_station(station):
     else:
         # If no date supplied - get prediction for TODAY
         day = pd.datetime.today()
-        print("def get_ts_predictions_stations:No date supplied-will try predictions for today", day)
+        print("\n\ndef get_ts_predictions_stations:No date supplied\NWill try predictions for today->", day)
 
+        try:
+            # I think just forces check of session for sonde data
+            # n finds it there now since we wud have gone sonde_update earlier
+            sonde2day = pd.Series(session.get('sonde_item'))
+            print("\n\n########################################\
+                      \nHaving trouble getting radionsonde for",
+                  day, "\nwill use manually entered sonde data\n", sonde2day)
+            sonde_from_adams = False
+            print("Could not grab sonde data from adams database", sonde_from_adams == True)
+        except:
+            # get sonde data 1st
+            flash("No sonde data - please enter 1st")
+            return redirect(url_for('sonde_update'))
+        '''
         ## seems pointless to do this again - when we already gone thru earlier
-        # but believe me without this we can get individual station prodictions from
+        # but believe me without this we can not get individual station prodictions from
         # aero_intel page !!!! go figure why thats the case
         try:
             # try adam 1st - will always fail on www
             if station in ['YSSY', 'YSRI', 'YWLM', 'YSBK', 'YSCN', 'YSHW', 'YSHL']:
-                print("Looks like we want TS predictions for airport in Sydney Basin\n\
+                print("\n\nLooks like we want TS predictions for airport in Sydney Basin\n\
                       Get Sydnye SOnde")
                 sonde = getf160_adams(66037)
             if station in ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY']:
-                print("Looks like we want TS predictions for airport in Brisbane Valley\n\
+                print("\n\nLooks like we want TS predictions for airport in Brisbane Valley\n\
                       Get Brisbane SOnde")
                 sonde = getf160_adams(40842)
 
@@ -1868,32 +1879,35 @@ def results_TS_station(station):
             # hanks works but runs into except clause!!!
 
             sonde = process_adams_sonde(sonde).squeeze()
-            print("Todays sonde flight for Brisbane:", sonde)
+            print("\n\nTodays sonde flight for Brisbane:", sonde)
             # logger.debug("Todays sonde flight:", sonde2day)
             sonde_from_adams = True
             sonde2day = sonde
-            print("Sonde flight from adams ", sonde_from_adams, " Sonde status ", sonde_from_adams == True)
+            print("\n\nSonde flight from adams ", sonde_from_adams, " Sonde status ", sonde_from_adams == True)
         except:
             try:
                 # I think just forces check of session for sonde data
                 # n finds it there now since we wud have gone sonde_update earlier
                 sonde2day = pd.Series(session.get('sonde_item'))
-                print("Having trouble getting radionsonde for",
-                  day, "\nwill use manually entered sonde data ", sonde2day)
+                print("\n\n########################################\
+                          \nHaving trouble getting radionsonde for",
+                      day, "\nwill use manually entered sonde data ", sonde2day)
                 sonde_from_adams = False
                 print("Could not grab sonde data from adams database", sonde_from_adams == True)
             except:
                 # get sonde data 1st
                 flash("No sonde data - please enter 1st")
                 return redirect(url_for('sonde_update'))
+        '''
 
-    # grab data for matching
+    # grab data 00Z or 02Z from obs or tcz for matching when running retrospective
+    # climatological predictions over historical dates
     if my_date:
         # If date supplied - get prediction for that day
         day = pd.to_datetime(my_date)  # my_date is string like '2018-02-13'
         # get obs from station/sonde merged data for this date
         if utc is None: # batch process assumes we want to match again 02Z/12pm obs
-            print("Matching using 12pm data when no Time specified\n", \
+            print("\n\nMatching using 12pm data by default when no Time specified\n", \
                   df[['T', 'Td', 'QNH']].between_time('01:45', '02:15').tail(5))
 
         aws_sonde_daily = pd.merge(
@@ -1904,13 +1918,14 @@ def results_TS_station(station):
             left_index=True, right_index=True, how='left') \
             .rename(columns={'QNH': 'P', 'any_ts': 'TS', '500_wdir': 'wdir500', '500_WS': 'wspd500'})
         obs_4day = aws_sonde_daily.loc[my_date]  # .T.squeeze()
-        print("Observations for given date {} is \n{}" \
+        print("\n\nObservations for given date {} is \n{}" \
               .format(day.strftime("%Y-%m-%d"), obs_4day))
     else:
-        # If no date supplied - get prediction for today
+        # If no date supplied - we want prediction for today (or tomorrow!)
         day = pd.datetime.today()
         obs_4day = sonde2day  # initialise todays obs with todays sonde
-        print("\nRadio sonde for {} :\n{}"\
+
+        print("\n\nRadio sonde for {} from todays sonde data:\n{}"\
               .format(day.strftime("%Y-%m-%d"), obs_4day.to_frame()))
         try:
 
@@ -1920,10 +1935,11 @@ def results_TS_station(station):
             # After midnight/14Z - we likely want TS forecast for next day
             # next 00Z obs not in for another 10 hours - no before 10am/00Z
             # so prompt for 00Z conditions QNH and Td all we need
-            print ("Current hour is ", cur_hour)
+            print ("\n\nCurrent hour is ", cur_hour)
 
-            if ((cur_hour >= 0) & ( cur_hour < 12)):
-                print("Past 00Z and before midnight - so station obs for QNH and Td at 00Z should be available now")
+            if ((cur_hour >= 0) & ( cur_hour < 14)):
+                print("\n\nPast 00Z and before midnight - \n\
+                so UPDATE station obs using QNH and Td at 00Z")
                 try:
                     print("\nGetting observartions for station:{}".format(station))
                     wx_obs = bous.get_wx_obs_www([station]).squeeze()  # expects a list
@@ -1936,36 +1952,43 @@ def results_TS_station(station):
                     We try and read form data only when confirmed that form data was posted
                     '''
                     if request.method =='POST':
+                        print("\n\nSynop parameters being sourced from user\n\
+                        Use user specified utc time for matching and P/Td (instead of default 00Z)")
                         print(list(request.form.items()))
                         utc = float(list(request.form.items())[0][1])
-                        print("\n\nSynop Matching time is", utc)
+                        obs_4day['P'] = float(list(request.form.items())[1][1])  # float(press)
+                        obs_4day['Td'] = float(list(request.form.items())[2][1])
+                        # update rest of surface parameters from station aws data
+                        obs_4day['T'] = wx_obs['T']
+                        obs_4day['wdir'] = wx_obs['wdir']
+                        obs_4day['wspd'] = wx_obs['wspd']
                     else:
-                        print("No form data posted here - so use default synop matching time")
-                    # update surface parameters from station aws data
-                    obs_4day['P'] = wx_obs['P']
-                    obs_4day['T'] = wx_obs['T']
-                    obs_4day['Td'] = wx_obs['Td']
-                    obs_4day['wdir'] = wx_obs['wdir']
-                    obs_4day['wspd'] = wx_obs['wspd']
+                        print("\nNo form data posted here - so we use 00Z obs for Td, QNH etc")
+                        # update surface parameters from station aws data
+                        obs_4day['P'] = wx_obs['P']
+                        obs_4day['T'] = wx_obs['T']
+                        obs_4day['Td'] = wx_obs['Td']
+                        obs_4day['wdir'] = wx_obs['wdir']
+                        obs_4day['wspd'] = wx_obs['wspd']
                 except:
-                    print("\nIssues getting observartions for station:{}".format(station))
+                    print("\nIssues getting observations for station:{}. Try again later!".format(station))
             elif (cur_hour >= 12):
-                print("Past diurnal storm times for today\nThink you want predictions for tomorrow \
-                    please enter forecast estimates for stations QNH and Td at 00Z")
+                print("\n\nPast diurnal storm times for today\nThink you want predictions for tomorrow \
+                please enter forecast estimates for stations QNH and Td at 00Z")
                 # press, td = input("Enter station pressure and dew point separated by comma:").strip().split(",")
-                print("obs_4day B4 manual enter 00Z P,Td", obs_4day)
+                print("\n\nobs_4day B4 manual enter 00Z P,Td", obs_4day)
                 #try:
                 if request.method == 'POST':
-                    obs_4day['P'] =  float(list(request.form.items())[0][1])  #float(press)
-                    obs_4day['Td'] = float(list(request.form.items())[1][1])
+                    obs_4day['P'] =  float(list(request.form.items())[1][1])  #float(press)
+                    obs_4day['Td'] = float(list(request.form.items())[2][1])
                 else:
                     print("No P and Td data entered - no form data to read!")
-                print("\nobs_4day after manual enter 00Z P,Td\n",obs_4day)
 
+            print("\nobs_4day after manual enter 00Z P,Td etc merged with sonde data for upper air data\n",obs_4day)
 
             # when sonde data manually entered - we set these manually
             if sonde_from_adams == 0:
-                print("Sonde flight from adams", sonde_from_adams,
+                print("\n\nSonde flight from adams", sonde_from_adams,
                     "\nsonde data manually entered - we set these manually")
                 obs_4day['T500'] = float(sonde2day['t500'])
                 obs_4day['wdir500'] = float(sonde2day['wdir500'])
@@ -1980,8 +2003,8 @@ def results_TS_station(station):
             logger.debug("Observations for today {} :\n{}"\
                 .format(day.strftime("%Y-%m-%d"), obs_4day))
         except:
-            print("Results.html Having trouble getting station data for today for {}\
-                \nTry predict TS using last obs in database".format(station))
+            print("\n\nResults.html Having trouble getting station data for today for {}\n\
+            Try predict TS using last obs in database".format(station))
             # obs_4day = aws_sonde_daily.loc[aws_sonde_daily.iloc[-1].index]
             # continue
 
@@ -1991,7 +2014,10 @@ def results_TS_station(station):
     # df_temp = df_temp.resample('D').first()  # gets only one 06XX UTC obs from each day
     # note the above keeps 'fogflag' as bool but introduces some NaN which can make filtering paninful
     df_temp=None
-    if utc is None:  # if no form data to confirm which sysnoptc hour to match against - deafult to midday obs
+
+    # if no form data to confirm which synoptc hour to match against - default to midday obs
+    # can also check for if request.method =='POST': to see if user input parameters
+    if utc is None:
         df_temp = df.between_time('01:45', '02:15').resample('D').first()
         print("Matching using 12pm data when no Time specified\n",\
               df[['T', 'Td', 'QNH']].between_time('01:45', '02:15').tail(5))
@@ -2017,14 +2043,16 @@ def results_TS_station(station):
         #right=sonde_data[['wdir500','wspd500','T500', 'tmp_rate850_500']],
         left_index=True, right_index=True,how='left')\
         .rename(columns={'QNH': 'P','any_ts':'TS','500_wdir':'wdir500','500_WS':'wspd500'})
-    print("\nMerged Sonde/AWS data is:\n", aws_sonde_daily.tail(5))
-    ''' get date input from main 'thunderstorm_predict.html' '''
+    print("\nMerged Sonde/AWS data is:\n", \
+          aws_sonde_daily[['AvID', 'WDir', 'WS', 'T', 'Td', 'P','wdir500','wspd500']].tail(5))
 
+
+    ''' get date input from main 'thunderstorm_predict.html' '''
 
     if obs_4day[['wdir500','wspd500','T500', 'P','Td','tmp_rate850_500']].isnull().any():
         logger.debug("Results.html Fix Missing parameters First")
         # Back to main landing page - focus data entry form
-        flash("Results.html Fix Missing parameters 500 winds/temp and surface Td/QNH")
+        flash("\n\nResults.html Fix Missing parameters 500 winds/temp and surface Td/QNH")
         return redirect(url_for('sonde_update'))
         # return redirect(url_for('aero_intel',taf_id=station))
 
