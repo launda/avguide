@@ -142,7 +142,7 @@ class Comment(db.Model):
 
 
 app.config['SECRET_KEY'] = 'a very bad password'
-app.permanent_session_lifetime = datetime.timedelta(days=0.1) #0.0005)   1 divide 24hrs X 2 = 0.02 days
+app.permanent_session_lifetime = datetime.timedelta(days=0.001)  #0.0005)  # 1 divide 24hrs X 2 = 0.02 days
 # don't set to 0 - then won't remember sonde data and predictions fail
 # with no obvious reasons why --- DONT MAKE
 
@@ -1550,7 +1550,7 @@ def storm_predict():
         '''
     else:
 
-        print("We don't have todays sounding data yet yet, try loading from adams 1st,\n\
+        print("\n\nWe don't have todays sounding data yet yet, try loading from adams 1st,\n\
               if that fails throw the sonde_update form to user to enter manually!")
         try:
             sonde = bous.getf160_adams(40842) # 08180906,start_date='2018-08-07',end_date='2018-08-08')
@@ -1596,7 +1596,7 @@ def storm_predict():
             print("Having trouble getting radionsonde for",\
             day, "ENTER SONDE DATA MANUALLY on FORM")
             # FORCE USER TO ENTER SONDE DATA !!!!!!!!!!!!
-            flash("ENTER SOUNDING DATA FROM LOCATION CLOSEST TO YOUR AIRPORT\n\
+            flash("ENTER SOUNDING DATA FROM SONDE LOCATION CLOSEST TO YOUR AIRPORT.\n\
                    TO GET FORECAST FOR ANOTHER AREA, 1ST ENTER SELECT/ENTER CORRECT SOUNDING DATA")
             return redirect(url_for('sonde_update'))   # remark on python anywhere.com only
 
@@ -1844,7 +1844,7 @@ def results_TS_station(station):
     else:
         # If no date supplied - get prediction for TODAY
         day = pd.datetime.today()
-        print("\n\ndef get_ts_predictions_stations:No date supplied\NWill try predictions for today->", day)
+        print("\n\ndef get_ts_predictions_stations:No date supplied\nWill try predictions for today", day)
 
         try:
             # I think just forces check of session for sonde data
@@ -2227,6 +2227,7 @@ def results_FOG_station(station):
             # try adams database first
             if station in ['YSSY', 'YSRI', 'YWLM', 'YSBK', 'YSCN', 'YSHW', 'YSHL']:
                 sonde = getf160_adams(66037)
+
             if station in ['YBBN','YBAF','YAMB','YBSU','YBCG','YBOK','YTWB','YKRY']:
                 sonde = getf160_adams(40842)
 
@@ -2238,7 +2239,7 @@ def results_FOG_station(station):
             #adjust date (23Z issue!), drop extra STN_NUM columns
             #add day of year , season, drop duplicate rows for same date
             sonde = process_adams_sonde(sonde).squeeze()
-            print("Todays sonde flight for Brisbane:", sonde)
+            print("Sonde flight data:", sonde)
             # logger.debug("Todays sonde flight:", sonde2day)
             sonde_from_adams = True
             sonde2day = sonde
@@ -2257,7 +2258,7 @@ def results_FOG_station(station):
                  flash("No sonde data - please enter 1st")
                  return redirect(url_for('sonde_update'))
 
-    print("/nGetting preci for {}".format(station))
+    print("\nGetting preci for {}".format(station))
     fcst = precis.loc[bous.avid_preci[station],]
     forecasts = fcst.to_html(bold_rows=True, border=4, col_space=10, justify='right', escape=False)
 
@@ -2283,7 +2284,7 @@ def results_FOG_station(station):
 
     # get fog data - not just dates as we need to show stats for matched for days below
     fg = bous.get_fog_data_vins(station=station, auto_obs='YES')
-    print("********************FOG DATA FOR "+station+"**********************************\n",fg.tail())
+    print("\n********************FOG DATA FOR "+station+"**********************************\n",fg.tail())
     fg_dates = pd.to_datetime(fg[fg['fogflag']].index.date)
     # just check the dates are same
     # fg[fg['fogflag']].index.isin(fg_dates).sum() #should return 287 fog days for YBBN
@@ -2291,7 +2292,7 @@ def results_FOG_station(station):
     #df['date'] = df.index.date
     #df['fogflag'] = df['date'].isin(fg_dates)
 
-    print("********************FOG DATES FOR "+station+"*********************************\n")
+    print("********************FOG DATES FOR "+station+"*********************************")
     print('This many fog dates in aws data ', len(np.unique(fg_dates)))
 
     '''get ECMWF Reanal gradient level winds - we only looking at 06Z data now
@@ -2315,20 +2316,25 @@ def results_FOG_station(station):
             open(
             os.path.join(cur_dir, 'data', 'YBBN_sonde_2300_aws.pkl'), 'rb'))
     elif station in ['YSSY','YSRI','YWLM','YSBK','YSCN','YSHW','YSHL']:
+        '''NB YSSY does sounding at odd times unlike YBBN 1700Z, 1900Z, 2200Z etc'''
         snd = pickle.load(
             open(
                 os.path.join(cur_dir, 'data', 'YSSY_sonde_2300_aws.pkl'), 'rb'))
+    print('\nSonde file read is this:', \
+          snd[['sfc_P','sfc_T','sfc_Td','sfc_wdir','sfc_wspd','900_wdir','900_WS','tmp_rate850_500']].tail())
 
     # snd = bous.get_sounding_data(station='YBBN',time='23')
     # set the UTC date as index - so its same utc day as fog event
     # df_winds.set_index(df_winds.index - pd.Timedelta(str(1) + ' days'),inplace=bool(1))
+
+    # we need lapse rate in lowest 850 feet only not the 850 to 500 lapse rate
     snd['lr_sfc_850'] = snd['sfc_T'] - snd['T850']
     #snd = snd[['lr_sfc_850','900_wdir','900_WS', 'T850','Td850','T700','Td700','T500','Td500']] #only grab these cols
 
     snd = pd.merge(left=snd, right=fg[['fogflag']],how='left',left_index=True,right_index=True)
     # df_winds.rename(columns={'wspd850':'850_WS'}, inplace = True)
 
-    print("\b********************900hPa WIND DATA FOR "+station+"************************************************\n")
+    print("\n********************900hPa WIND DATA FOR "+station+"******************************************\n")
     print(snd.tail())
 
     obs_4day = None
@@ -2391,7 +2397,7 @@ def results_FOG_station(station):
         # If no date supplied - get prediction for today
         day = pd.datetime.today()
         obs_4day = sonde2day  # initialise todays obs with todays sonde
-        print("\nRadio sonde for {} :\n{}"\
+        print("\nRadio sonde for {} :\n{}\n"\
             .format(day.strftime("%Y-%m-%d"), obs_4day.to_frame()))
 
         print(list(request.form.items()))
@@ -2454,7 +2460,7 @@ def results_FOG_station(station):
     # df_temp = df_temp.resample('D').first()  # gets only one 06XX UTC obs from each day
     # note the above keeps 'fogflag' as bool but introduces some NaN which can make filtering paninful
     df_temp=None
-    print("utc for pattern matchig =",utc)
+    print("\nutc for pattern matchig =",utc)
     if utc==5:
         df_temp = df.between_time('04:45', '05:15').resample('D').first()
         print("Matching using 3pm data\n",df[['T','Td','QNH']].between_time('04:45', '05:15').tail())
@@ -2476,7 +2482,7 @@ def results_FOG_station(station):
         right=snd[['900_wdir', '900_WS', 'lr_sfc_850', 'fogflag']], \
         left_index=True, right_index=True, how='left')
 
-    print("********************FINAL AWS + 900 WINDS MERGED DATA FOR "+station+"********************************\n")
+    print("\n******************FINAL AWS + 900 WINDS MERGED DATA FOR "+station+"********************************\n")
     print('Final fogger merged file\n', aws_sonde_daily[aws_sonde_daily['fogflag']==1].tail())
 
     #if obs_4day[['P','T','Td','900Dir','900spd','lr_sfc_850']].isnull().any():

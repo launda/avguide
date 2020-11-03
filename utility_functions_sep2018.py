@@ -1215,6 +1215,7 @@ def get_sounding_data(station:str='YBBN',time:str='2300',level:str=None)->pd.Dat
     #file = f'{cur_dir}/{station}_sonde{time}z_2000to2020.csv'
     file = f'{station}_sonde{time}z_2000to2020.csv'
 
+    '''  Use picklised one - faster and data is already formatted 
     sonde = pd.read_csv(
         open(os.path.join('app','data',file),'rb'),
         parse_dates=[0],
@@ -1222,7 +1223,7 @@ def get_sounding_data(station:str='YBBN',time:str='2300',level:str=None)->pd.Dat
         names=col_names,
         skiprows=1,
         header=None)
-
+    '''
     sonde = pickle.load(
             open(os.path.join(cur_dir,'app','data',station+'_sonde_'+time+'_aws.pkl'), 'rb'))
     '''
@@ -1546,6 +1547,7 @@ def getf160_adams(station_number=40842, start_date='None',end_date='None'):
 
     conn = cx_Oracle.connect(user='anonymous', password='anonymous', dsn='adamprd')
     # cursor = conn.cursor()
+    hr = datetime.utcnow().hour # pd.datetime.today().hour
 
     '''Note: seems we can't get current days sonde data from ADAMS
        not until a few hours after sonde launch
@@ -1553,6 +1555,42 @@ def getf160_adams(station_number=40842, start_date='None',end_date='None'):
        yesterdays sonde
        Other option is use Bretts interface on aifs-qld
        http://aifs-qld.bom.gov.au/local/qld/rfc/pages/digi.php '''
+    '''
+    if (start_date is 'None'): # | (end_date is 'None'):
+        if ((hr > 14) & (hr < 24)):
+            # we have to set start date one day since its new calendar day!!
+            start_date = (pd.datetime.today() - pd.Timedelta('1 days'))\
+                        .strftime("%Y-%m-%d")
+            end_date = (pd.datetime.today() + pd.Timedelta('1 days')) \
+                .strftime("%Y-%m-%d")
+
+            query = (
+                "SELECT stn_num,tm,pres,geop_ht,air_temp,dwpt,wnd_dir,round(wnd_spd*1.943) as wnd_spd FROM UAS "
+                "WHERE STN_NUM={station_number} "
+                "AND TM between TO_DATE('{start_date}', 'yyyy-mm-dd') "
+                "AND TO_DATE('{end_date}', 'yyyy-mm-dd') "
+                "AND TO_CHAR(tm,'hh24') in (16,17,18,19,20,21,22,23) "
+                "ORDER by tm,-1*pres"
+            ).format(
+                start_date=start_date, end_date=end_date, station_number=station_number
+            )
+        else:
+            # Note we increment end_date by 1 day to provide a range
+            start_date = (pd.datetime.today() - pd.Timedelta('1 days'))\
+                        .strftime("%Y-%m-%d")
+            end_date = (pd.datetime.today() + pd.Timedelta('1 days'))\
+                        .strftime("%Y-%m-%d")
+            query = (
+                "SELECT stn_num,tm,pres,geop_ht,air_temp,dwpt,wnd_dir,round(wnd_spd*1.943) as wnd_spd FROM UAS "
+                "WHERE STN_NUM={station_number} "
+                "AND TM between TO_DATE('{start_date}', 'yyyy-mm-dd') "
+                "AND TO_DATE('{end_date}', 'yyyy-mm-dd') "
+                "AND TO_CHAR(tm,'hh24') in (00,01,02,03,04,05,06) "
+                "ORDER by tm,-1*pres"
+            ).format(
+                start_date=start_date, end_date=end_date, station_number=station_number
+            )
+    '''
     if (start_date is 'None'): # | (end_date is 'None'):
         # we have to set start date one day back due 23Z time issues
         start_date = (pd.datetime.today() - pd.Timedelta('1 days'))\
@@ -1578,24 +1616,9 @@ def getf160_adams(station_number=40842, start_date='None',end_date='None'):
     start_date=start_date, end_date=end_date, station_number=station_number
     )
 
-    '''
-    "AND wnd_dir is not null "
-    "AND pres is not null and air_temp is not null and dwpt is not null
+    print(query)
+    print(f"\nCurrent hour = {hr}. Sonde data from {start_date} to {end_date}")
 
-    select tm ,pres,air_temp,dwpt,geop_ht from uas where stn_num=$stn
-        and tm between '$start_date' and '$end_date'
-        and air_temp is not null
-        and pres>=100
-        order by tm,-1*pres;
-        select tm,pres,wnd_dir,wnd_spd*2 from uas where stn_num=$stn
-        and tm between '$start_date' and '$end_date'
-        and wnd_dir is not null
-        and pres>=$min_pressure
-        order by tm,-1*pres;
-    '''
-
-    #sonde_adam = sql.read_sql(query, conn, parse_dates=['TM'], index_col='TM')
-    #sonde_adam.to_csv(cur_dir + 'f160/sonde_data_adam_June10.csv')
     return(sql.read_sql(query, conn, parse_dates=['TM'], index_col='TM'))
 
 
@@ -3673,7 +3696,7 @@ def get_fg_predictions_stations_new(stations,sonde2day=None,my_date=None):
         print("\n\n\n\nBEGIN PROCESSING TS FORECASTS FOR SYDNEY BASIN\n",sonde_data.tail())
 
     # sonde_data = sonde_data.loc[:,['900_wdir', '900_WS','lr_sfc_850']].rename(columns={'900_wdir':'direction','900_WS':'speed'})
-    snd['lr_sfc_850'] = snd['sfc_T']-snd['T850']
+    sonde_data['lr_sfc_850'] = sonde_data['sfc_T']-sonde_data['T850']
 
     # now do predictions for all stations
     for station in stations:
@@ -3686,7 +3709,7 @@ def get_fg_predictions_stations_new(stations,sonde2day=None,my_date=None):
 
         fg_aut=get_fog_data_vins(station=station,auto_obs='Yes')
         fg_dates = fg_aut.index.date
-        sonde_data = pd.merge(left=snd, right=fg_aut[['fogflag']],how='left',\
+        sonde_data = pd.merge(left=sonde_data, right=fg_aut[['fogflag']],how='left',\
             left_index=True,right_index=True)
         #fg_dates = get_fog_data_vins(station = station,get_dates_only='Yes')
         # add fog flag columm to station aws data file
@@ -3857,6 +3880,9 @@ def get_fg_predictions_stations(stations,sonde2day=None,my_date=None):
         print("\n\n\n\nBEGIN PROCESSING TS FORECASTS FOR SYDNEY BASIN\n",sonde_data.tail())
 
     # The UTC date for sonde data is actually one less than the calendar data
+    # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    # very dodgy - fix logic!!!
+    # depends on sonding time 17/19/23Z versus 02Z,04Z,05Z etc
     sonde_data.set_index(sonde_data.index - pd.Timedelta(str(1) + ' days'),inplace=bool(1))
     sonde_data = sonde_data[['P900', 'wdir900', 'wspd900', 'P850', 'wdir850', 'wspd850']] #only grab these cols
     sonde_data.rename(columns={'wdir900': '900_wdir','wspd900':'900_WS',\
