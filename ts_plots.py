@@ -352,3 +352,100 @@ def compare_gpats_storm(loc1='YSRI',loc2='YSSY'):
     
 
     return(merged,ts_loc1_then_loc2,ts_loc2_then_loc1)
+
+
+
+## Convert time HH:MM format to decimal HH.mm
+'''60 minutes make an hour -  each minute is one-sixtieth (1/60) of an hour.
+Basis for converting number of minutes into fractions of an hour.
+To this for ease of plotting time as floats on y-axis
+1/60 = 0.016666666666666666
+'''
+def conversion(x):
+    h,m = x.split(':')
+    return (int(h) + int(m)/60)
+
+import seaborn as sns
+import numpy as np
+
+'''  problems with plotting native datetime on x-axis
+Guess the problme we have is we trying to boxplot time
+this involves maths mean, quantiles on datetime objects - think thats where problem lies!!!
+import matplotlib.dates as mdates
+dates = mdates.date2num(ts_stat['first'])
+matplotlib.pyplot.plot_date(dates, values
+myFmt = mdates.DateFormatter('%H:%M')
+axes[1].xaxis.set_major_formatter(myFmt)
+'''
+
+dict_mon = dict(zip(
+    [1,2,3,4,5,6,7,8,9,10,11,12],
+    ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]))
+
+sns.set_style("whitegrid")
+# # for sta in ['YSSY','YSRI','YWLM','YSCN','YSBK','YSHW','YSHL']:
+for sta in ['YBBN', 'YBAF', 'YAMB', 'YBSU', 'YBCG', 'YTWB','YBOK','YBWW']:
+    gpats_file = os.path.join(cur_dir, f'gpats_{sta}_10NM.csv')
+    fig, axes = plt.subplots(figsize=(14,18) , nrows=4, ncols=1)
+
+    dat = get_gpats_data(cur_dir=cur_dir,sta=sta,res='H')['AMP'].resample('D').count()
+    ts_days = dat.loc[dat>1]  # if we demand more than one gpats strikes on given day !
+    avg_mon_ts_days = ts_days.groupby(ts_days.index.month).count()/12
+    print(f"Annual Average thunder days {sum(avg_mon_ts_days):.2f}")
+
+    avg_mon_ts_days.plot( kind='bar', ax=axes[0])
+    title = f'Storm Climatology for {sta}:\
+    {ts_days.index[0].strftime("%b-%Y")} to {ts_days.index[-1].strftime("%b-%Y")}'
+    axes[0].set_title(title, color='b',fontsize=15)
+    axes[0].set_ylabel('Avg Monthly Thunder Days', color='g', fontsize=15)
+    axes[0].set_xlabel('', color='g', fontsize=15)
+
+
+    xlabels=[dict_mon[x+1] for x in axes[0].get_xticks()]
+    axes[0].set_xticklabels(xlabels,rotation=45, horizontalalignment='right')
+    axes[0].tick_params(labelsize=8)
+
+    ############################ plot TS start times ##################
+    ts_stat = get_gpats_start_end_duration(  get_gpats_data(cur_dir,sta=sta,res='1min') )
+    print(ts_stat.info())
+    print(ts_stat)
+
+    # round duration to closest 1hour !!
+    ts_stat['duration'] = round((ts_stat['last'] - ts_stat['first'])/np.timedelta64(1, 'h') , 1)
+
+    # convert start and end time to numeric
+    ts_stat['first'] =  ts_stat['first'].dt.strftime('%H:%M').apply(conversion)
+    ts_stat['last'] =  ts_stat['last'].dt.strftime('%H:%M').apply(conversion)
+
+    sns.boxplot(data=ts_stat, x=ts_stat.index.month, y='first', linewidth=2, ax=axes[1])
+    axes[1].set_ylabel('Onset (UTC)', color='g', fontsize=15)
+
+    xlabels=[dict_mon[x+1] for x in axes[1].get_xticks()]
+    axes[1].set_xticklabels(xlabels,rotation=45, horizontalalignment='right')
+    axes[1].tick_params(labelsize=8)
+    axes[1].set_xlabel('', color='g', fontsize=15)
+
+
+    ############################ plot TS end times ##################
+
+    sns.boxplot(data=ts_stat, x=ts_stat.index.month, y='last', linewidth=2, ax=axes[2])
+    axes[2].set_ylabel('Finish (UTC)', color='g', fontsize=15)
+
+    xlabels=[dict_mon[x+1] for x in axes[2].get_xticks()]
+    axes[2].set_xticklabels(xlabels,rotation=45, horizontalalignment='right')
+    axes[2].tick_params(labelsize=8)
+    axes[2].set_xlabel('', color='g', fontsize=15)
+
+
+    ############################ plot TS duration ##################
+
+
+    sns.boxplot(data=ts_stat, x=ts_stat.index.month, y='duration', linewidth=2, ax=axes[3])
+    axes[3].set_ylabel('Duration (hours)', color='g', fontsize=15)
+
+    xlabels=[dict_mon[x+1] for x in axes[3].get_xticks()]
+    axes[3].set_xticklabels(xlabels,rotation=45, horizontalalignment='right')
+    axes[3].tick_params(labelsize=8)
+    axes[3].set_xlabel('Month', color='g', fontsize=15)
+    
+    plt.savefig(f'./ts_plots_seqld/{sta}_TS_stats.eps', format='eps', dpi=1000)
