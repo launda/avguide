@@ -1555,71 +1555,113 @@ def getf160_adams(station_number=40842, start_date='None',end_date='None'):
        yesterdays sonde
        Other option is use Bretts interface on aifs-qld
        http://aifs-qld.bom.gov.au/local/qld/rfc/pages/digi.php '''
-    '''
-    if (start_date is 'None'): # | (end_date is 'None'):
-        if ((hr > 14) & (hr < 24)):
-            # we have to set start date one day since its new calendar day!!
-            start_date = (pd.datetime.today() - pd.Timedelta('1 days'))\
-                        .strftime("%Y-%m-%d")
-            end_date = (pd.datetime.today() + pd.Timedelta('1 days')) \
-                .strftime("%Y-%m-%d")
 
-            query = (
-                "SELECT stn_num,tm,pres,geop_ht,air_temp,dwpt,wnd_dir,round(wnd_spd*1.943) as wnd_spd FROM UAS "
-                "WHERE STN_NUM={station_number} "
-                "AND TM between TO_DATE('{start_date}', 'yyyy-mm-dd') "
-                "AND TO_DATE('{end_date}', 'yyyy-mm-dd') "
-                "AND TO_CHAR(tm,'hh24') in (16,17,18,19,20,21,22,23) "
-                "ORDER by tm,-1*pres"
-            ).format(
-                start_date=start_date, end_date=end_date, station_number=station_number
-            )
-        else:
-            # Note we increment end_date by 1 day to provide a range
-            start_date = (pd.datetime.today() - pd.Timedelta('1 days'))\
-                        .strftime("%Y-%m-%d")
-            end_date = (pd.datetime.today() + pd.Timedelta('1 days'))\
-                        .strftime("%Y-%m-%d")
-            query = (
-                "SELECT stn_num,tm,pres,geop_ht,air_temp,dwpt,wnd_dir,round(wnd_spd*1.943) as wnd_spd FROM UAS "
-                "WHERE STN_NUM={station_number} "
-                "AND TM between TO_DATE('{start_date}', 'yyyy-mm-dd') "
-                "AND TO_DATE('{end_date}', 'yyyy-mm-dd') "
-                "AND TO_CHAR(tm,'hh24') in (00,01,02,03,04,05,06) "
-                "ORDER by tm,-1*pres"
-            ).format(
-                start_date=start_date, end_date=end_date, station_number=station_number
-            )
-    '''
-    if (start_date is 'None'): # | (end_date is 'None'):
-        # we have to set start date one day back due 23Z time issues
-        start_date = (pd.datetime.today() - pd.Timedelta('1 days'))\
-                        .strftime("%Y-%m-%d")
+    df=pd.DataFrame()
+
+    # if (start_date is 'None'): # | (end_date is 'None'):
+    if (hr >= 14):  # after midnight local to 24Z/10am get the morning trace - anytime 14Z till 23Z
+        '''we have to set start date one day earlier since its new calendar day!!
+           we have to set start calendar date by 2 days to grab 23Z issue
+           say its 16Z on the 20th. The latest sonde 
+        '''
+        start_date = (pd.datetime.today() - pd.Timedelta('1 days')).strftime("%Y-%m-%d")
         end_date = pd.datetime.today().strftime("%Y-%m-%d")
+        print(f"\nCurrent hour = {hr}. Sonde data from {start_date} to {end_date}\
+                      Trying sonde from 00Z to 06Z")
+        query = (
+            "SELECT stn_num,tm,pres,geop_ht,air_temp,dwpt,wnd_dir,round(wnd_spd*1.943) as wnd_spd FROM UAS "
+            "WHERE STN_NUM={station_number} "
+            "AND TM between TO_DATE('{start_date}', 'yyyy-mm-dd') "
+            "AND TO_DATE('{end_date}', 'yyyy-mm-dd') "
+            "AND TO_CHAR(tm,'hh24') in (00,01,02,03,04,05,06) "
+            "ORDER by tm,-1*pres"
+        ).format(
+            start_date=start_date, end_date=end_date, station_number=station_number
+        )
+        print(query)
 
-    #start_date = pd.to_datetime(start_date)
 
-    print(start_date,end_date)
+        df = sql.read_sql(query, conn, parse_dates=['TM'], index_col='TM')
+        print(df)
 
-    # Note in the SQL we increment end_date by 1 day
-    query = (
-    "SELECT stn_num,tm,pres,geop_ht,air_temp,dwpt,wnd_dir,round(wnd_spd*1.943) as wnd_spd FROM UAS "
-    "WHERE STN_NUM={station_number}"
-    "AND TM between TO_DATE('{start_date}', 'yyyy-mm-dd')"
-    "AND TO_DATE('{end_date}', 'yyyy-mm-dd') + 1 "
-    "AND TO_CHAR(tm,'hh24') in (22,23,00,01,02,03)"
-    # "AND TO_CHAR(tm,'hh24') = '23' " <-- Don't
-    # "AND pres IN (910,850,700,500)"
-    # "AND pres is NOT NULL"   ERROR OR-00908 mising null keyword
-    "ORDER by tm,-1*pres"
-    ).format(
-    start_date=start_date, end_date=end_date, station_number=station_number
-    )
+        if df.empty: # try get 23Z sonde from previous calendar day
+            '''
+            This situation arises when say its anytime 14Z but no afternoon sonde 
+            from same UTC date - so say 20th 1600Z, we try get sonde from 20th between 00 to 06Z
+            if we can't then we go back further to 19th and get 23Z sonde from there
+            '''
+            start_date = (pd.datetime.today() - pd.Timedelta('2 days')).strftime("%Y-%m-%d")
+            end_date =   pd.datetime.today().strftime("%Y-%m-%d")
 
-    print(query)
-    print(f"\nCurrent hour = {hr}. Sonde data from {start_date} to {end_date}")
+            print(f"\nNo 00Z to 06Z sonde current UTC date. Try sonde data from {start_date} to {end_date} to grab yesterdays 23Z sonde\n")
 
-    return(sql.read_sql(query, conn, parse_dates=['TM'], index_col='TM'))
+            query = (
+                "SELECT stn_num,tm,pres,geop_ht,air_temp,dwpt,wnd_dir,round(wnd_spd*1.943) as wnd_spd FROM UAS "
+                "WHERE STN_NUM={station_number} "
+                "AND TM between TO_DATE('{start_date}', 'yyyy-mm-dd') "
+                "AND TO_DATE('{end_date}', 'yyyy-mm-dd') "
+                "AND TO_CHAR(tm,'hh24') in (22,23) "
+                "ORDER by tm,-1*pres"
+            ).format(
+                start_date=start_date, end_date=end_date, station_number=station_number
+            )
+
+            print(query)
+
+
+            df = sql.read_sql(query, conn, parse_dates=['TM'], index_col='TM')
+
+    elif (hr <= 14):  # 00Z to 14Z get afternoon sonde anytime after 00Z upto 06Z
+        # Note we increment end_date by 1 day to provide a range
+        start_date = pd.datetime.today().strftime("%Y-%m-%d")
+        end_date = (pd.datetime.today() + pd.Timedelta('1 days')).strftime("%Y-%m-%d")
+        print(f"\nCurrent hour = {hr}. Sonde data from {start_date} to {end_date}\
+                      Trying sonde from 00Z to 06Z")
+        query = (
+            "SELECT stn_num,tm,pres,geop_ht,air_temp,dwpt,wnd_dir,round(wnd_spd*1.943) as wnd_spd FROM UAS "
+            "WHERE STN_NUM={station_number} "
+            "AND TM between TO_DATE('{start_date}', 'yyyy-mm-dd') "
+            "AND TO_DATE('{end_date}', 'yyyy-mm-dd') "
+            "AND TO_CHAR(tm,'hh24') in (00,01,02,03,04,05,06) "
+            "ORDER by tm,-1*pres"
+        ).format(
+            start_date=start_date, end_date=end_date, station_number=station_number
+        )
+
+        print(query)
+
+
+        df = sql.read_sql(query, conn, parse_dates=['TM'], index_col='TM')
+
+        if df.empty: # try get 23Z sonde from previous calendar day
+            '''
+            This situation arises when say its anytime 00 to 06Z but no afternoon sonde
+            so we try get 23Z sonde from previous calendar date for todays afternoon storm assessement
+            '''
+            start_date = (pd.datetime.today() - pd.Timedelta('1 days')).strftime("%Y-%m-%d")
+            end_date =   (pd.datetime.today() + pd.Timedelta('1 days')).strftime("%Y-%m-%d")
+
+            print(f"\nNo 00Z to 06Z sonde today. Try sonde data from {start_date} to {end_date} to grab yesterdays 23Z sonde\n")
+            query = (
+                "SELECT stn_num,tm,pres,geop_ht,air_temp,dwpt,wnd_dir,round(wnd_spd*1.943) as wnd_spd FROM UAS "
+                "WHERE STN_NUM={station_number} "
+                "AND TM between TO_DATE('{start_date}', 'yyyy-mm-dd') "
+                "AND TO_DATE('{end_date}', 'yyyy-mm-dd') "
+                "AND TO_CHAR(tm,'hh24') in (22,23) "
+                "ORDER by tm,-1*pres"
+            ).format(
+                start_date=start_date, end_date=end_date, station_number=station_number
+            )
+
+            print(query)
+
+
+            df = sql.read_sql(query, conn, parse_dates=['TM'], index_col='TM')
+
+    if ~df.empty:
+        print(df)
+
+    return (df)
 
 
 #############################################################
