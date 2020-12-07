@@ -1,0 +1,31 @@
+23Z/00Z sonde 3000ft winds
+
+Wind Direction < 50 and > 240   POD (recall or TPR): 60%, FAR 36%
+5000ft and same cut offs   POD (recall or TPR): 57%, FAR 36%
+
+
+
+
+3pm conditions for fog
+
+wind_dir<=60 and wdir>340   POD (recall or TPR): 68%, FAR 36%
+
+
+6pm conditions for fog
+
+wind_dir<=50 and wdir>340  POD (recall or TPR): 70%, FAR 34%
+
+
+
+
+
+9pm conditions for fog
+
+wind_dir<=40 and wdir>340   POD (recall or TPR): 70%, FAR 30%
+
+
+
+
+12am conditions for fog
+
+wind_dir<=15 and wdir>230  POD (recall or TPR): 66%, FAR 35%
