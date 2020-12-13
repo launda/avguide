@@ -1,3 +1,89 @@
+Td
+
+# 75% of fog days have 3pm Td more than ~ 14.2 (mean 15.8+/-2.8 so 13-18.6) [11+/-6 5-17 fog free days winter 8-20 all months]
+# and 75% Td Sep < 7.5                         (mean 5.9 +/- 2.8, i.e 3-8)  [10.7+/-5.8 or 5-16 fog free days winter n also all months
+
+# upto 75% of fog days have 6pm Td more than ~ 15 (mean 16.6+/-2.4 ~ 14-19) [12+/-5 ~ 7-17 fog free days]
+# and 75% 6pm Td sep < 3  (mean 2 +/- 1, i.e 1 to 3) [6+/-4 or 2-10 fog free days]
+
+
+# upto 75% of fog days have 9pm Td more than ~ 15 (mean 16.4+/-2.6 so 14-19) [12+/-5 7-19 fog free days]
+# and 75% 9pm Td sep < 1.5 mean 1.2 +/- .8, i.e 0.4 to 2) [5+/-4 or 1-9 fog free days]
+
+
+# upto 75% of fog days have 12am Td more than ~ 14 (mean 15+/-3 so 12-18) 	[12+/-5 7-17 fog free days] 
+# and 75% 12am Td sep < .9 (mean 0.7 +/- 0.5, i.e 0.2 to 1.2) [3.7+/-3.2 or .7-7 fog free days]
+
+
+68% are within 1std which is the mean +/- 1std 
+However for thresholds to use, we will take the 1st (25%) or 3rd (75%) quntile, 
+
+
+So
+fog fog days 75% of Td5>14.2, Td8>15.3,Td11>14.8,Td14>13.7  (NB 14Z Td lower  - not increasing beyond 11Z)
+             TmTd5<7.5, TmTd8<2.8, TmTd11<1.5, TmTd14<0.9   (NB TmTd decr to 14Z - shud test TmTd all the way to 14Z)
+
+
+
+# 75% thresholds 
+fg_aut['TmTd_trend_5to14'] = \
+    (fg_aut['Td5']>14.2)   & (fg_aut['Td8']>15.3)  & (fg_aut['Td11']>13.7) & (fg_aut['Td14']>13.7) & \
+    (fg_aut['TmTd5']<7.5)  & (fg_aut['TmTd8']<2.8) & (fg_aut['TmTd11']<1.5) & (fg_aut['TmTd14']<1) & \
+    (fg_aut['TmTd14']<fg_aut['TmTd11']) & \
+    (fg_aut['TmTd11']<fg_aut['TmTd8']) & \
+    (fg_aut['TmTd8']<fg_aut['TmTd5']) 
+
+print(pd.crosstab(index=fg_aut['fogflag'],
+            columns=fg_aut['TmTd_trend_5to14'],
+            margins=True))
+
+
+TmTd_trend_5to14  False  True   All
+fogflag                            
+False              7065    69  7134
+True                133    40   173
+All                7198   109  7307
+
+# 75% thresholds round up or down to next number
+fg_aut['TmTd_trend_5to14'] = \
+    (fg_aut['Td5']>14)   & (fg_aut['Td8']>15)  & (fg_aut['Td11']>13) & (fg_aut['Td14']>13) & \
+    (fg_aut['TmTd5']<8)  & (fg_aut['TmTd8']<3) & (fg_aut['TmTd11']<2) & (fg_aut['TmTd14']<1) & \
+    (fg_aut['TmTd14']<fg_aut['TmTd11']) & \
+    (fg_aut['TmTd11']<fg_aut['TmTd8']) & \
+    (fg_aut['TmTd8']<fg_aut['TmTd5']) 
+
+print(pd.crosstab(index=fg_aut['fogflag'],
+            columns=fg_aut['TmTd_trend_5to14'],
+            margins=True))
+
+
+
+TmTd_trend_5to14  False  True   All
+fogflag                            
+False              7025   109  7134
+True                121    52   173
+All                7146   161  7307
+
+
+# thresholds that give best>>?? results reduce all thresholds by 1 degree
+fg_aut['TmTd_trend_5to14'] = \
+    (fg_aut['Td5']>13)   & (fg_aut['Td8']>14)  & (fg_aut['Td11']>12) & (fg_aut['Td14']>12) & \
+    (fg_aut['TmTd5']<9)  & (fg_aut['TmTd8']<4) & (fg_aut['TmTd11']<3) & (fg_aut['TmTd14']<2) & \
+    (fg_aut['TmTd14']<fg_aut['TmTd11']) & \
+    (fg_aut['TmTd11']<fg_aut['TmTd8']) & \
+    (fg_aut['TmTd8']<fg_aut['TmTd5']) 
+
+pd.crosstab(index=fg_aut['fogflag'],
+            columns=fg_aut['TmTd_trend_5to14'],
+            margins=True)
+
+
+TmTd_trend_5to14  False  True   All
+fogflag                            
+False              6744   390  7134
+True                 77    96   173
+All                6821   486  7307
+
 23Z/00Z sonde 3000ft winds
 
 Wind Direction < 50 and > 240   POD (recall or TPR): 60%, FAR 36%
